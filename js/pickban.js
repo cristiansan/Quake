@@ -45,6 +45,7 @@
   let results       = [];
   let logLines      = [];
   let pendingBans   = [];
+  let resultSaved   = false;
 
   // ── FIREBASE HELPERS ──────────────────────────────────────────────────────────
   // Firebase converts arrays with gaps/nulls to objects keyed by numeric strings.
@@ -121,6 +122,7 @@
 
     logLines    = toArr(data.logLines);
     pendingBans = toArr(data.pendingBans);
+    resultSaved = data.resultSaved || false;
 
     // Recompute derived state
     mapsToPlay = computeMapsToPlay();
@@ -131,7 +133,7 @@
 
   function getState() {
     return { players, startPlayer, phase, mapStep, mapPool,
-             champMapIndex, champStep, champPool, results, logLines, pendingBans };
+             champMapIndex, champStep, champPool, results, logLines, pendingBans, resultSaved };
   }
 
   function writeState() {
@@ -480,6 +482,12 @@
   function showResult() {
     document.getElementById('winner-p1-label').textContent = players[0];
     document.getElementById('winner-p2-label').textContent = players[1];
+
+    const saveBtn  = document.getElementById('save-btn');
+    const savedMsg = document.getElementById('already-saved-msg');
+    if (saveBtn)  saveBtn.style.display  = resultSaved ? 'none'  : 'block';
+    if (savedMsg) savedMsg.style.display = resultSaved ? 'block' : 'none';
+
     const section = document.getElementById('result-section');
     if (section.style.display !== 'block') {
       section.style.display = 'block';
@@ -549,6 +557,7 @@
 
   // ── SAVE (exposed for onclick) ────────────────────────────────────────────────
   window.saveResult = function () {
+    if (resultSaved) return;
     const winnerRadio = document.querySelector('input[name="winner"]:checked');
     const scoreRadio  = document.querySelector('input[name="score"]:checked');
     if (!winnerRadio) { alert('Seleccioná un ganador.'); return; }
@@ -567,6 +576,8 @@
       })),
     };
     saveMatch(match);
+    resultSaved = true;
+    if (fbMode) writeState();
     window.location.href = 'ranking.html';
   };
 

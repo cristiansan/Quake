@@ -544,6 +544,13 @@ body {
 .save-result .btn { margin-top: 0.6rem; max-width: none; }
 .save-result .btn + .btn { margin-top: 0.5rem; }
 
+.already-saved {
+  margin-top: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--win-color);
+  letter-spacing: 0.04em;
+}
+
 /* ── RANKING PAGE ─────────────────────────────────────────────────────────────── */
 .ranking-main {
   display: flex;
