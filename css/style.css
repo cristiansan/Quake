@@ -399,7 +399,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0.45rem;
-  min-height: 85px;
+  min-height: 105px;
   justify-content: center;
   transition: border-color 0.2s, background 0.2s, opacity 0.2s;
   user-select: none;
@@ -791,24 +791,57 @@ td.maps-cell { font-size: 0.82rem; color: var(--text-dim); }
   flex-shrink: 0;
 }
 
-/* Share link button */
+/* Share link button — eye-catching */
 .btn-share {
   display: none;
   align-items: center;
   gap: 0.35em;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
+  background: var(--accent);
+  border: none;
+  color: #000;
   font-family: 'Orbitron', monospace;
   font-size: 0.62rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
-  padding: 0.28em 0.65em;
+  padding: 0.35em 0.8em;
   border-radius: 3px;
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.2s, color 0.2s;
+  animation: sharePulse 2s ease-in-out infinite;
 }
-.btn-share:hover { border-color: var(--p1-border); color: var(--p1); }
+.btn-share:hover { opacity: 0.85; animation: none; }
+@keyframes sharePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,106,0,0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(255,106,0,0); }
+}
+
+/* Sprite icons */
+.sprite-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-size: auto;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.map-card.banned .sprite-icon  { opacity: 0.35; filter: grayscale(0.6); }
+
+.sprite-icon-sm {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-size: auto;
+  flex-shrink: 0;
+}
+
+/* Tracker map row (icon + name side by side) */
+.tracker-map-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
 
 /* ── SCROLLBAR ────────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar        { width: 5px; height: 5px; }

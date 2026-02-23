@@ -141,6 +141,26 @@
     window._fbDb.ref('sessions/' + sessionId).set(getState());
   }
 
+  // ── SPRITE HELPERS ───────────────────────────────────────────────────────────
+  // Sprite dimensions (from PNG headers)
+  const MAP_CELL_W = 676 / 3;   // ≈ 225.33 px per cell
+  const MAP_CELL_H = 457 / 7;   // ≈ 65.28 px per cell
+  const CHM_CELL_W = 453 / 2;   // = 226.5 px per cell
+  const CHM_CELL_H = 525 / 8;   // = 65.625 px per cell
+  // Icon circle center from cell top-left (icon ≈ 52px, left-pad ≈ 7px → center = 33)
+  const ICON_CTR = 33;
+
+  // Returns background-position string to center the icon in a displaySize×displaySize div
+  function mapBp(mapIndex, displaySize) {
+    const pad = ICON_CTR - displaySize / 2;
+    const c = mapIndex % 3, r = Math.floor(mapIndex / 3);
+    return `-${Math.round(c * MAP_CELL_W + pad)}px -${Math.round(r * MAP_CELL_H + pad)}px`;
+  }
+  function champBp(sc, sr, displaySize) {
+    const pad = ICON_CTR - displaySize / 2;
+    return `-${Math.round(sc * CHM_CELL_W + pad)}px -${Math.round(sr * CHM_CELL_H + pad)}px`;
+  }
+
   // ── TURN GATING ──────────────────────────────────────────────────────────────
   function isMyTurn() {
     if (!fbMode) return true;
@@ -302,7 +322,7 @@
     const btn = document.getElementById('share-btn');
     if (!btn || btn.style.display === 'inline-flex') return;
     btn.style.display = 'inline-flex';
-    btn.textContent   = `\uD83D\uDD17 ${players[1]}`;
+    btn.textContent   = `\u21D7 LINK ${players[1].toUpperCase()}`;
   }
 
   function renderTracker() {
@@ -337,10 +357,19 @@
           ${banHtml}
         </div>` : '';
 
+      const mapIdx     = hasMap ? MAPS.findIndex(m => m.id === slot.map.id) : -1;
+      const mapBpStr   = mapIdx >= 0 ? mapBp(mapIdx, 30) : null;
+      const mapIconHtml = mapBpStr
+        ? `<div class="sprite-icon sprite-icon-sm" style="background-image:url('images/maps.png');background-position:${mapBpStr}"></div>`
+        : '';
+
       return `
         <div class="${cls}">
           <div class="tracker-label">${slot.label}</div>
-          <div class="tracker-mapname">${hasMap ? slot.map.name : '—'}</div>
+          <div class="tracker-map-row">
+            ${mapIconHtml}
+            <div class="tracker-mapname">${hasMap ? slot.map.name : '—'}</div>
+          </div>
           ${champsHtml}
         </div>`;
     }).join('');
@@ -414,7 +443,7 @@
     const grid   = document.getElementById('map-grid');
     const myTurn = isMyTurn();
     grid.innerHTML = '';
-    mapPool.forEach(map => {
+    mapPool.forEach((map, i) => {
       const card = document.createElement('div');
       card.className = `map-card ${map.status}`;
       if (map.actionBy !== null) card.classList.add(`p${map.actionBy + 1}`);
@@ -424,7 +453,12 @@
         card.addEventListener('click', () => handleMapClick(map.id));
       }
 
-      const nameEl  = document.createElement('span');
+      const iconEl = document.createElement('div');
+      iconEl.className = 'sprite-icon';
+      iconEl.style.backgroundImage    = "url('images/maps.png')";
+      iconEl.style.backgroundPosition = mapBp(i, 40);
+
+      const nameEl = document.createElement('span');
       nameEl.className   = 'map-card-name';
       nameEl.textContent = map.name;
 
@@ -434,6 +468,7 @@
       else if (map.status === 'picked')  badgeEl.textContent = `MAP ${mapPickNumber(map)}`;
       else if (map.status === 'decider') badgeEl.textContent = 'DECIDER';
 
+      card.appendChild(iconEl);
       card.appendChild(nameEl);
       card.appendChild(badgeEl);
       grid.appendChild(card);
@@ -445,6 +480,8 @@
     const myTurn = isMyTurn();
     grid.innerHTML = '';
     champPool.forEach(champ => {
+      const base = CHAMPIONS.find(c => c.id === champ.id);
+
       const card = document.createElement('div');
       card.className = `map-card ${champ.status}`;
       if (champ.actionBy !== null) card.classList.add(`p${champ.actionBy + 1}`);
@@ -454,7 +491,12 @@
         card.addEventListener('click', () => handleChampClick(champ.id));
       }
 
-      const nameEl  = document.createElement('span');
+      const iconEl = document.createElement('div');
+      iconEl.className = 'sprite-icon';
+      iconEl.style.backgroundImage    = "url('images/champions.png')";
+      iconEl.style.backgroundPosition = base ? champBp(base.sc, base.sr, 40) : '0 0';
+
+      const nameEl = document.createElement('span');
       nameEl.className   = 'map-card-name';
       nameEl.textContent = champ.name;
 
@@ -463,6 +505,7 @@
       if      (champ.status === 'banned') badgeEl.textContent = 'BANNED';
       else if (champ.status === 'picked') badgeEl.textContent = players[champ.actionBy].toUpperCase();
 
+      card.appendChild(iconEl);
       card.appendChild(nameEl);
       card.appendChild(badgeEl);
       grid.appendChild(card);

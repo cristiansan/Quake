@@ -15,22 +15,23 @@ const MAPS = [
 ];
 
 // ── CHAMPION POOL ─────────────────────────────────────────────────────────────
+// sc = sprite column (0 or 1), sr = sprite row (0-7) in champions.png
 const CHAMPIONS = [
-  { id: 'ranger',       name: 'Ranger',          short: 'Ranger'  },
-  { id: 'visor',        name: 'Visor',           short: 'Visor'   },
-  { id: 'anarki',       name: 'Anarki',          short: 'Anarki'  },
-  { id: 'bj',           name: 'B.J. Blazkowicz', short: 'BJ'      },
-  { id: 'clutch',       name: 'Clutch',          short: 'Clutch'  },
-  { id: 'deathknight',  name: 'Death Knight',    short: 'DK'      },
-  { id: 'doomslayer',   name: 'Doom Slayer',     short: 'Doom'    },
-  { id: 'eisen',        name: 'Eisen',           short: 'Eisen'   },
-  { id: 'galena',       name: 'Galena',          short: 'Galena'  },
-  { id: 'keel',         name: 'Keel',            short: 'Keel'    },
-  { id: 'nyx',          name: 'Nyx',             short: 'Nyx'     },
-  { id: 'slash',        name: 'Slash',           short: 'Slash'   },
-  { id: 'solag',        name: 'Solag',           short: 'Solag'   },
-  { id: 'scalebearer',  name: 'Scalebearer',     short: 'SB'      },
-  { id: 'strogg',       name: 'Strogg & Peeker', short: 'Strogg'  },
+  { id: 'ranger',       name: 'Ranger',          short: 'Ranger',  sc: 0, sr: 2 },
+  { id: 'visor',        name: 'Visor',           short: 'Visor',   sc: 1, sr: 2 },
+  { id: 'anarki',       name: 'Anarki',          short: 'Anarki',  sc: 1, sr: 0 },
+  { id: 'bj',           name: 'B.J. Blazkowicz', short: 'BJ',      sc: 1, sr: 3 },
+  { id: 'clutch',       name: 'Clutch',          short: 'Clutch',  sc: 1, sr: 6 },
+  { id: 'deathknight',  name: 'Death Knight',    short: 'DK',      sc: 0, sr: 5 },
+  { id: 'doomslayer',   name: 'Doom Slayer',     short: 'Doom',    sc: 0, sr: 4 },
+  { id: 'eisen',        name: 'Eisen',           short: 'Eisen',   sc: 1, sr: 5 },
+  { id: 'galena',       name: 'Galena',          short: 'Galena',  sc: 0, sr: 3 },
+  { id: 'keel',         name: 'Keel',            short: 'Keel',    sc: 1, sr: 7 },
+  { id: 'nyx',          name: 'Nyx',             short: 'Nyx',     sc: 0, sr: 0 },
+  { id: 'slash',        name: 'Slash',           short: 'Slash',   sc: 0, sr: 1 },
+  { id: 'solag',        name: 'Solag',           short: 'Solag',   sc: 0, sr: 7 },
+  { id: 'scalebearer',  name: 'Scalebearer',     short: 'SB',      sc: 0, sr: 6 },
+  { id: 'strogg',       name: 'Strogg & Peeker', short: 'Strogg',  sc: 1, sr: 4 },
 ];
 
 // ── LOCALSTORAGE HELPERS ──────────────────────────────────────────────────────
