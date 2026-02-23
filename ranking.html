@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking — Quake Live</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <header class="site-header compact">
+      <a href="index.html" class="back-link">← INICIO</a>
+      <h1>RANKING</h1>
+      <button onclick="clearData()" class="btn-danger-sm">BORRAR TODO</button>
+    </header>
+
+    <main class="ranking-main">
+
+      <!-- STANDINGS -->
+      <section class="standings-section">
+        <h2>TABLA DE POSICIONES</h2>
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>JUGADOR</th>
+              <th>W — L</th>
+              <th>WIN%</th>
+            </tr>
+          </thead>
+          <tbody id="standings-body">
+            <tr><td colspan="4" class="empty">Sin datos todavía</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- MATCH HISTORY -->
+      <section class="history-section">
+        <h2>HISTORIAL DE PARTIDAS</h2>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>FECHA</th>
+              <th>PARTIDA</th>
+              <th>SCORE</th>
+              <th>MAPAS</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr><td colspan="4" class="empty">Sin partidas registradas</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/ranking.js"></script>
+  <script src="js/version.js"></script>
+</body>
+</html>

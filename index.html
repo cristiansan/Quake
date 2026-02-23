@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quake Live — Pick & Ban</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <header class="site-header">
+      <h1>QUAKE LIVE</h1>
+      <p class="tagline">Map Pick &amp; Ban · Best of 3</p>
+    </header>
+
+    <main class="home-main">
+      <div class="card form-card">
+        <h2>NUEVA PARTIDA</h2>
+        <form id="matchForm">
+          <div class="field">
+            <label for="p1">JUGADOR 1</label>
+            <input type="text" id="p1" maxlength="24" placeholder="Nombre" autocomplete="off" required>
+          </div>
+          <div class="field">
+            <label for="p2">JUGADOR 2</label>
+            <input type="text" id="p2" maxlength="24" placeholder="Nombre" autocomplete="off" required>
+          </div>
+          <button type="submit" class="btn btn-primary">INICIAR PICK &amp; BAN</button>
+          <div id="name-error" class="form-error" style="display:none">Los nombres no pueden ser iguales.</div>
+        </form>
+      </div>
+
+      <a href="ranking.html" class="btn btn-secondary">VER RANKING</a>
+    </main>
+
+  </div>
+
+  <script src="js/version.js"></script>
+  <script>
+    function genSessionId() {
+      // Avoids visually confusable characters (0/O, 1/I/l)
+      const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let id = '';
+      for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
+      return id;
+    }
+
+    document.getElementById('matchForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const p1  = document.getElementById('p1').value.trim();
+      const p2  = document.getElementById('p2').value.trim();
+      const err = document.getElementById('name-error');
+      if (p1.toLowerCase() === p2.toLowerCase()) {
+        err.style.display = 'block';
+        document.getElementById('p2').focus();
+        return;
+      }
+      err.style.display = 'none';
+      const sid = genSessionId();
+      window.location.href =
+        'pickban.html?session=' + encodeURIComponent(sid) +
+        '&player=0&p1=' + encodeURIComponent(p1) + '&p2=' + encodeURIComponent(p2);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,810 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   QUAKE LIVE — PICK & BAN   |   style.css
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+/* ── VARIABLES ──────────────────────────────────────────────────────────────── */
+:root {
+  --bg:            #0a0a0a;
+  --bg-card:       #141414;
+  --bg-card-2:     #1c1c1c;
+  --border:        #272727;
+  --border-hover:  #444;
+  --text:          #e0e0e0;
+  --text-muted:    #666;
+  --text-dim:      #999;
+
+  --accent:        #ff6a00;
+
+  /* Player colors */
+  --p1:            #00cfff;
+  --p1-bg:         rgba(0, 207, 255, 0.07);
+  --p1-border:     rgba(0, 207, 255, 0.4);
+
+  --p2:            #ff6a00;
+  --p2-bg:         rgba(255, 106, 0, 0.07);
+  --p2-border:     rgba(255, 106, 0, 0.4);
+
+  /* Map states */
+  --banned-bg:     rgba(160, 0, 0, 0.18);
+  --banned-color:  #cc3333;
+  --banned-border: rgba(160, 0, 0, 0.3);
+
+  --decider-bg:    rgba(255, 210, 0, 0.08);
+  --decider-color: #ffd700;
+  --decider-border:rgba(255, 210, 0, 0.4);
+
+  --win-color:     #33bb66;
+  --loss-color:    #cc3333;
+}
+
+/* ── RESET ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  min-height: 100vh;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────────────────────────── */
+.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 1rem 4rem;
+}
+
+/* ── SITE HEADER ────────────────────────────────────────────────────────────── */
+.site-header {
+  text-align: center;
+  padding: 2.5rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+}
+
+.site-header h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-shadow: 0 0 24px rgba(255, 106, 0, 0.35);
+}
+
+.site-header .tagline {
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  text-transform: uppercase;
+}
+
+/* Compact header (inner pages) */
+.site-header.compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 1.2rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.site-header.compact h1 {
+  font-size: 1.3rem;
+  text-shadow: none;
+}
+
+.back-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--accent); }
+
+/* Match title inside compact header */
+.match-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  flex: 1;
+  justify-content: center;
+}
+
+.name-p1 { color: var(--p1); }
+.name-p2 { color: var(--p2); }
+.vs {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.bo3-badge {
+  font-size: 0.7rem;
+  padding: 0.2em 0.55em;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+/* ── HOME ───────────────────────────────────────────────────────────────────── */
+.home-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2rem;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.form-card h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.22em;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.field { margin-bottom: 1.1rem; }
+
+.field label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.field input {
+  width: 100%;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.65rem 0.9rem;
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--accent); }
+
+.form-error {
+  font-size: 0.8rem;
+  color: var(--banned-color);
+  margin-top: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  padding: 0.7rem 1.4rem;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn:hover  { opacity: 0.82; }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 420px;
+}
+.btn-secondary:hover {
+  border-color: var(--text-muted);
+  color: var(--text);
+  opacity: 1;
+}
+
+.btn-danger-sm {
+  background: transparent;
+  border: 1px solid var(--banned-color);
+  color: var(--banned-color);
+  padding: 0.28em 0.7em;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  border-radius: 3px;
+  font-family: 'Orbitron', monospace;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.btn-danger-sm:hover { background: rgba(160, 0, 0, 0.2); }
+
+/* ── MATCH TRACKER ───────────────────────────────────────────────────────────── */
+.match-tracker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+
+@media (max-width: 550px) { .match-tracker { grid-template-columns: 1fr; } }
+
+.tracker-slot {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem 0.9rem;
+  min-height: 58px;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+
+/* Map picked → green */
+.tracker-slot.active {
+  border-color: #2d9e5f;
+  background: rgba(34, 170, 85, 0.07);
+}
+
+/* Decider picked → gold */
+.tracker-slot.active-decider {
+  border-color: var(--decider-border);
+  background: var(--decider-bg);
+}
+
+/* Currently selecting champions for this map → pulsing glow */
+.tracker-slot.current-champ {
+  animation: trackerPulse 1.8s ease-in-out infinite;
+}
+@keyframes trackerPulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(255,255,255,0.08); }
+  50%       { box-shadow: 0 0 8px 2px rgba(255,255,255,0.13); }
+}
+
+.tracker-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.57rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.tracker-mapname {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.tracker-slot.active          .tracker-mapname { color: #44dd88; }
+.tracker-slot.active-decider  .tracker-mapname { color: var(--decider-color); }
+
+.tracker-champs {
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tracker-champ { font-size: 0.82rem; font-weight: 500; }
+.tracker-p1    { color: var(--p1); }
+.tracker-p2    { color: var(--p2); }
+.tracker-ban   { font-size: 0.74rem; color: var(--banned-color); font-style: italic; margin-top: 0.15rem; }
+
+/* ── PHASE INDICATOR ─────────────────────────────────────────────────────────── */
+.phase-indicator {
+  display: inline-block;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  padding: 0.35em 0.9em;
+  border-radius: 3px;
+  margin-bottom: 0.8rem;
+}
+
+.phase-maps  { background: rgba(255,106,0,0.1);  color: var(--accent);       border: 1px solid var(--p2-border);      }
+.phase-champs{ background: rgba(0,207,255,0.1);  color: var(--p1);           border: 1px solid var(--p1-border);      }
+.phase-done  { background: var(--decider-bg);    color: var(--decider-color);border: 1px solid var(--decider-border); }
+
+/* ── TURN BAR ─────────────────────────────────────────────────────────────────── */
+.turn-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.9rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+  transition: border-color 0.3s;
+}
+
+.turn-bar.player1 { border-color: var(--p1-border); }
+.turn-bar.player2 { border-color: var(--p2-border); }
+.turn-bar.complete { border-color: var(--decider-border); }
+
+#turn-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.turn-bar.player1 #turn-text { color: var(--p1); }
+.turn-bar.player2 #turn-text { color: var(--p2); }
+.turn-bar.complete #turn-text { color: var(--decider-color); }
+
+.step-counter {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+/* ── MAP GRID ─────────────────────────────────────────────────────────────────── */
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+
+@media (max-width: 700px) {
+  .map-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .map-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.map-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 85px;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s, opacity 0.2s;
+  user-select: none;
+}
+
+.map-card.clickable { cursor: pointer; }
+
+/* Hover color reflects current player's turn (maps + champs) */
+.turn-bar.player1 ~ .map-grid   .map-card.available.clickable:hover,
+.turn-bar.player1 ~ .champ-grid .map-card.available.clickable:hover {
+  border-color: var(--p1-border);
+  background: var(--p1-bg);
+}
+.turn-bar.player2 ~ .map-grid   .map-card.available.clickable:hover,
+.turn-bar.player2 ~ .champ-grid .map-card.available.clickable:hover {
+  border-color: var(--p2-border);
+  background: var(--p2-bg);
+}
+
+/* Banned */
+.map-card.banned {
+  background: var(--banned-bg);
+  border-color: var(--banned-border);
+  opacity: 0.55;
+}
+.map-card.banned .map-card-name { text-decoration: line-through; color: var(--text-muted); }
+
+/* Picked P1 */
+.map-card.picked.p1 { background: var(--p1-bg); border-color: var(--p1-border); }
+
+/* Picked P2 */
+.map-card.picked.p2 { background: var(--p2-bg); border-color: var(--p2-border); }
+
+/* Decider */
+.map-card.decider { background: var(--decider-bg); border-color: var(--decider-border); }
+
+.map-card-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.map-card-badge {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  min-height: 0.9em;
+}
+
+.map-card.banned  .map-card-badge { color: var(--banned-color); }
+.map-card.picked.p1 .map-card-badge { color: var(--p1); }
+.map-card.picked.p2 .map-card-badge { color: var(--p2); }
+.map-card.decider .map-card-badge { color: var(--decider-color); }
+
+/* ── CHAMPION GRID ───────────────────────────────────────────────────────────── */
+.champ-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+
+@media (max-width: 700px) { .champ-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 480px) { .champ-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── ACTION LOG ───────────────────────────────────────────────────────────────── */
+.log-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.log-section h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  color: var(--text-muted);
+  margin-bottom: 0.65rem;
+}
+
+.action-log {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.log-p1      { color: var(--p1); font-weight: 700; }
+.log-p2      { color: var(--p2); font-weight: 700; }
+.log-decider { color: var(--decider-color); font-weight: 700; }
+
+/* ── RESULT SECTION ───────────────────────────────────────────────────────────── */
+.result-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+}
+
+/* Save result form */
+.save-result { }
+
+.save-result h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.winner-select,
+.score-select {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.radio-label input[type="radio"] {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.save-result .btn { margin-top: 0.6rem; max-width: none; }
+.save-result .btn + .btn { margin-top: 0.5rem; }
+
+/* ── RANKING PAGE ─────────────────────────────────────────────────────────────── */
+.ranking-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.standings-section h2,
+.history-section h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
+  color: var(--text-muted);
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.standings-table,
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+  background: var(--bg-card);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.standings-table th,
+.history-table th {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card-2);
+}
+
+.standings-table td,
+.history-table td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.standings-table tr:last-child td,
+.history-table tr:last-child td { border-bottom: none; }
+
+.standings-table tr:hover td,
+.history-table tr:hover td { background: var(--bg-card-2); }
+
+/* Table cell styles */
+td.rank {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  width: 2.2rem;
+}
+
+td.pname { font-weight: 700; font-size: 1.05rem; }
+
+.win  { color: var(--win-color); }
+.loss { color: var(--loss-color); }
+
+td.pct { color: var(--text-dim); font-size: 0.88rem; }
+
+.winner-name { color: var(--win-color); font-weight: 700; }
+.vs-sm { color: var(--text-muted); font-size: 0.85em; }
+
+td.score {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+td.date { font-size: 0.8rem; color: var(--text-muted); }
+td.maps-cell { font-size: 0.82rem; color: var(--text-dim); }
+
+.empty {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem !important;
+}
+.empty a { color: var(--accent); text-decoration: none; }
+
+/* ── COPY BUTTON ─────────────────────────────────────────────────────────────── */
+.btn-copy {
+  background: transparent;
+  color: var(--p1);
+  border: 1px solid var(--p1-border);
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+}
+.btn-copy:hover  { background: var(--p1-bg); opacity: 1; }
+.btn-copy:disabled { color: var(--win-color); border-color: var(--win-color); opacity: 0.85; cursor: default; }
+
+/* ── VERSION BADGE ───────────────────────────────────────────────────────────── */
+.version-badge {
+  position: fixed;
+  bottom: 0.9rem;
+  left: 1rem;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.22em 0.55em;
+  cursor: pointer;
+  z-index: 100;
+  transition: color 0.2s, border-color 0.2s;
+}
+.version-badge:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── CHANGELOG MODAL ─────────────────────────────────────────────────────────── */
+.changelog-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.changelog-modal.open { display: flex; }
+
+.changelog-inner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: min(460px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.changelog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+}
+
+.changelog-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: var(--text);
+}
+
+.changelog-close {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.15em 0.5em;
+  border-radius: 3px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.changelog-close:hover { color: var(--text); border-color: var(--text-muted); }
+
+.changelog-body    { padding: 1.2rem; }
+.changelog-entry   { margin-bottom: 1.4rem; }
+.changelog-entry:last-child { margin-bottom: 0; }
+
+.changelog-version {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+
+.changelog-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.changelog-list li {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  padding-left: 1.1em;
+  position: relative;
+  line-height: 1.4;
+}
+.changelog-list li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+
+/* ── MULTIPLAYER ─────────────────────────────────────────────────────────────── */
+
+/* Waiting for opponent */
+.turn-bar.waiting {
+  border-color: var(--border);
+}
+.turn-bar.waiting #turn-text {
+  color: var(--text-muted);
+  font-style: italic;
+  animation: waitPulse 1.8s ease-in-out infinite;
+}
+@keyframes waitPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* "Jugando como: ..." badge below header */
+.my-player-badge {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.3em 0.7em;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+/* Header right section (share btn + bo3 badge) */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Share link button */
+.btn-share {
+  display: none;
+  align-items: center;
+  gap: 0.35em;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'Orbitron', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  padding: 0.28em 0.65em;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-share:hover { border-color: var(--p1-border); color: var(--p1); }
+
+/* ── SCROLLBAR ────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: var(--bg); }
+::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
