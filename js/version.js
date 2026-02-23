@@ -1,7 +1,16 @@
 (function () {
-  const VERSION = 'v0.3';
+  const VERSION = 'v0.4';
 
   const CHANGELOG = [
+    {
+      version: 'v0.4',
+      changes: [
+        'Íconos de mapa y champion en cada carta (sprites)',
+        'Íconos de mapa en el tracker superior',
+        'Botón de share más llamativo con pulso naranja y flecha ↗',
+        'Bloqueo de doble guardado: solo un jugador puede registrar el resultado',
+      ],
+    },
     {
       version: 'v0.3',
       changes: [
