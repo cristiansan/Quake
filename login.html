@@ -126,6 +126,8 @@
 
       try {
         await firebase.auth().signInWithEmailAndPassword(email, password);
+        // Reload profile to ensure displayName is available before redirecting
+        await firebase.auth().currentUser.reload();
         window.location.href = nextUrl;
 
       } catch (err) {

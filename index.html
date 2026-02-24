@@ -74,17 +74,22 @@
     firebase.auth().onAuthStateChanged(function (user) {
       const section = document.getElementById('auth-section');
       if (user) {
-        // Pre-fill Player 1 with the user's Quake username
-        const p1Input = document.getElementById('p1');
-        if (p1Input && !p1Input.value && user.displayName) {
-          p1Input.value = user.displayName;
-        }
+        // Reload profile to ensure displayName is fresh (may not be cached on first login)
+        user.reload().then(function () {
+          const freshUser = firebase.auth().currentUser;
+          if (!freshUser) return;
 
-        const displayName = user.displayName || user.email;
-        section.innerHTML =
-          '<span class="auth-user-email">' + displayName + '</span>' +
-          '<button class="btn-signout" onclick="firebase.auth().signOut()">SALIR</button>';
-        section.className = 'home-auth-section logged-in';
+          const p1Input = document.getElementById('p1');
+          if (p1Input && !p1Input.value && freshUser.displayName) {
+            p1Input.value = freshUser.displayName;
+          }
+
+          const displayName = freshUser.displayName || freshUser.email;
+          section.innerHTML =
+            '<span class="auth-user-email">' + displayName + '</span>' +
+            '<button class="btn-signout" onclick="firebase.auth().signOut()">SALIR</button>';
+          section.className = 'home-auth-section logged-in';
+        });
       } else {
         section.innerHTML =
           '<a href="login.html" class="btn-login-link">INICIAR SESIÓN / REGISTRARSE</a>' +
