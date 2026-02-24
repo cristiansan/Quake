@@ -5,6 +5,39 @@
   const myPlayer  = parseInt(params.get('player') ?? '-1', 10);    // 0, 1, or -1 (legacy)
   const fbMode    = !!sessionId && typeof firebase !== 'undefined'; // Firebase available?
 
+  // ── SOUND EFFECTS ─────────────────────────────────────────────────────────────
+  const SFX = (function () {
+    let _ctx = null;
+    function ctx() {
+      if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+      return _ctx;
+    }
+    function tone(freq, endFreq, dur, type, vol) {
+      try {
+        const ac   = ctx();
+        const osc  = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ac.currentTime);
+        if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, ac.currentTime + dur);
+        gain.gain.setValueAtTime(vol, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+        osc.start();
+        osc.stop(ac.currentTime + dur);
+      } catch (e) {}
+    }
+    return {
+      ban:    function () { tone(520, 80,   0.22, 'sawtooth', 0.25); },
+      pick:   function () { tone(260, 680,  0.2,  'sine',     0.3);  },
+      notify: function () {
+        tone(880,  880,  0.09, 'sine', 0.3);
+        setTimeout(function () { tone(1100, 1100, 0.13, 'sine', 0.25); }, 115);
+      },
+    };
+  })();
+
   // ── SEQUENCE BUILDERS ─────────────────────────────────────────────────────────
   function buildMapSeq(sp) {
     const op = 1 - sp;
@@ -257,6 +290,7 @@
     map.stepIndex = mapStep;
 
     const isBan  = seq.action === 'ban';
+    if (isBan) SFX.ban(); else SFX.pick();
     const verb   = isBan ? 'baneó' : 'eligió';
     const suffix = seq.isDecider ? ` <span class="log-decider">(MAP 3)</span>` : '';
     addLog(isBan ? 'ban' : 'pick',
@@ -281,9 +315,11 @@
 
     const result = results[champMapIndex];
     if (seq.action === 'ban') {
+      SFX.ban();
       result.bans.push(champ.name);
       addLog('ban',  `<span class="log-p${seq.player + 1}">${players[seq.player]}</span> baneó champion <strong>${champ.name}</strong>`);
     } else {
+      SFX.pick();
       result.picks[seq.player] = champ.name;
       addLog('pick', `<span class="log-p${seq.player + 1}">${players[seq.player]}</span> eligió <strong>${champ.name}</strong>`);
     }
@@ -638,6 +674,8 @@
   };
 
   // ── FIREBASE SESSION ──────────────────────────────────────────────────────────
+  let _prevIsMyTurn = null;
+
   function subscribeToSession() {
     window._fbDb.ref('sessions/' + sessionId).on('value', snap => {
       const data = snap.val();
@@ -645,7 +683,11 @@
         document.getElementById('turn-text').textContent = 'Esperando sesión...';
         return;
       }
+      const prevTurn = _prevIsMyTurn;
       applySnapshot(data);
+      const nowMyTurn = phase !== 'done' && isMyTurn();
+      if (prevTurn === false && nowMyTurn) SFX.notify();
+      _prevIsMyTurn = nowMyTurn;
       renderAll();
     }, err => {
       console.error('Firebase error:', err);
