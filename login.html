@@ -128,6 +128,8 @@
         await firebase.auth().signInWithEmailAndPassword(email, password);
         // Reload profile to ensure displayName is available before redirecting
         await firebase.auth().currentUser.reload();
+        const u = firebase.auth().currentUser;
+        if (u && u.displayName) localStorage.setItem('qc_username', u.displayName);
         window.location.href = nextUrl;
 
       } catch (err) {
@@ -168,6 +170,7 @@
       try {
         const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
         await cred.user.updateProfile({ displayName: username });
+        localStorage.setItem('qc_username', username);
         await cred.user.sendEmailVerification();
         await firebase.auth().signOut();
 

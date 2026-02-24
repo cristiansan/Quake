@@ -80,14 +80,15 @@
           if (!freshUser) return;
 
           const p1Input = document.getElementById('p1');
-          if (p1Input && !p1Input.value && freshUser.displayName) {
-            p1Input.value = freshUser.displayName;
+          const cachedName = freshUser.displayName || localStorage.getItem('qc_username') || '';
+          if (p1Input && !p1Input.value && cachedName) {
+            p1Input.value = cachedName;
           }
 
           const displayName = freshUser.displayName || freshUser.email;
           section.innerHTML =
             '<span class="auth-user-email">' + displayName + '</span>' +
-            '<button class="btn-signout" onclick="firebase.auth().signOut()">SALIR</button>';
+            '<button class="btn-signout" onclick="firebase.auth().signOut().then(function(){localStorage.removeItem(\'qc_username\')})">SALIR</button>';
           section.className = 'home-auth-section logged-in';
         });
       } else {
