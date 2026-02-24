@@ -225,6 +225,7 @@
     for (let i = 0; i < champMapIndex; i++) {
       if (results[i]?.picks[0]) usedNames.add(results[i].picks[0]);
       if (results[i]?.picks[1]) usedNames.add(results[i].picks[1]);
+      (results[i]?.bans || []).forEach(name => usedNames.add(name));
     }
     return CHAMPIONS
       .filter(c => !usedNames.has(c.name))
