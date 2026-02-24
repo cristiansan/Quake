@@ -122,10 +122,13 @@
     if (fbAvailable) {
       firebase.database().ref('matches').once('value')
         .then(function (snap) {
-          const data    = snap.val() || {};
-          const matches = Object.values(data).sort(function (a, b) {
+          const data      = snap.val() || {};
+          const fbMatches = Object.values(data).sort(function (a, b) {
             return new Date(b.date) - new Date(a.date);
           });
+          // If Firebase has no data, fall back to localStorage
+          // (handles matches saved locally before Firebase auth was ready)
+          const matches = fbMatches.length ? fbMatches : getMatches();
           renderStandings(matches);
           renderHistory(matches);
         })
@@ -143,5 +146,19 @@
   }
 
   // ── INIT ─────────────────────────────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', loadAndRender);
+  window.addEventListener('DOMContentLoaded', function () {
+    const fbAvailable = typeof firebase !== 'undefined' &&
+                        firebase.apps  && firebase.apps.length;
+    if (fbAvailable) {
+      // Wait for auth state before querying Firebase.
+      // Handles rules that require auth for reads, and avoids the race condition
+      // where onAuthStateChanged hasn't fired yet when the read is attempted.
+      const unsubscribe = firebase.auth().onAuthStateChanged(function () {
+        unsubscribe();
+        loadAndRender();
+      });
+    } else {
+      loadAndRender();
+    }
+  });
 })();

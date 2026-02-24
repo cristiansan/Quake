@@ -559,10 +559,8 @@
   }
 
   // ── RESULT SECTION ────────────────────────────────────────────────────────────
-  function showResult() {
-    document.getElementById('winner-p1-label').textContent = players[0];
-    document.getElementById('winner-p2-label').textContent = players[1];
-
+  // Separated from showResult() so it can be called again when auth state resolves.
+  function updateSaveUI() {
     const saveBtn  = document.getElementById('save-btn');
     const savedMsg = document.getElementById('already-saved-msg');
     const anonNote = document.getElementById('anon-save-note');
@@ -580,6 +578,13 @@
       if (saveBtn)  saveBtn.style.display  = authed ? 'block' : 'none';
       if (anonNote) anonNote.style.display = authed ? 'none'  : 'block';
     }
+  }
+
+  function showResult() {
+    document.getElementById('winner-p1-label').textContent = players[0];
+    document.getElementById('winner-p2-label').textContent = players[1];
+
+    updateSaveUI();
 
     const section = document.getElementById('result-section');
     if (section.style.display !== 'block') {
@@ -707,6 +712,13 @@
 
     // Firebase mode
     window._fbDb = firebase.database();
+
+    // When auth state resolves (may happen after the first render), re-evaluate
+    // the save button visibility. Fixes the race condition where currentUser is
+    // null on the first render even though the user is logged in.
+    firebase.auth().onAuthStateChanged(function () {
+      if (phase === 'done') updateSaveUI();
+    });
 
     if (myPlayer === 0) {
       // Player 1: initialize session if it doesn't exist yet, then subscribe
