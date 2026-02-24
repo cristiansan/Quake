@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quake Live — Pick & Ban</title>
+  <title>Quake Champions — Pick & Ban</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="page">
 
     <header class="site-header">
-      <h1>QUAKE LIVE</h1>
+      <h1>QUAKE CHAMPIONS</h1>
       <p class="tagline">Map Pick &amp; Ban · Best of 3</p>
     </header>
 
@@ -32,14 +32,21 @@
       </div>
 
       <a href="ranking.html" class="btn btn-secondary">VER RANKING</a>
+
+      <!-- Auth section: login button or user info -->
+      <div id="auth-section" class="home-auth-section">
+        <!-- Filled by script once auth state resolves -->
+      </div>
     </main>
 
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
   <script src="js/version.js"></script>
   <script>
     function genSessionId() {
-      // Avoids visually confusable characters (0/O, 1/I/l)
       const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
       let id = '';
       for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
@@ -61,6 +68,29 @@
       window.location.href =
         'pickban.html?session=' + encodeURIComponent(sid) +
         '&player=0&p1=' + encodeURIComponent(p1) + '&p2=' + encodeURIComponent(p2);
+    });
+
+    // Auth-aware section at the bottom
+    firebase.auth().onAuthStateChanged(function (user) {
+      const section = document.getElementById('auth-section');
+      if (user) {
+        // Pre-fill Player 1 with the user's Quake username
+        const p1Input = document.getElementById('p1');
+        if (p1Input && !p1Input.value && user.displayName) {
+          p1Input.value = user.displayName;
+        }
+
+        const displayName = user.displayName || user.email;
+        section.innerHTML =
+          '<span class="auth-user-email">' + displayName + '</span>' +
+          '<button class="btn-signout" onclick="firebase.auth().signOut()">SALIR</button>';
+        section.className = 'home-auth-section logged-in';
+      } else {
+        section.innerHTML =
+          '<a href="login.html" class="btn-login-link">INICIAR SESIÓN / REGISTRARSE</a>' +
+          '<span class="auth-hint">para guardar resultados en el ranking</span>';
+        section.className = 'home-auth-section';
+      }
     });
   </script>
 </body>

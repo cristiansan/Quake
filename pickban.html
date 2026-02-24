@@ -80,6 +80,10 @@
           <button id="copy-btn" onclick="copyResult()" class="btn btn-copy">COPY RESULT STRING</button>
           <button id="save-btn" onclick="saveResult()" class="btn btn-primary">GUARDAR Y VER RANKING</button>
           <div id="already-saved-msg" class="already-saved" style="display:none">✓ Resultado ya guardado por el otro jugador.</div>
+          <div id="anon-save-note" class="anon-save-note" style="display:none">
+            <a href="login.html" class="btn-login-link">INICIAR SESIÓN</a>
+            <span class="auth-hint">para guardar en el ranking global</span>
+          </div>
           <a href="index.html" class="btn btn-secondary">NUEVA PARTIDA (SIN GUARDAR)</a>
         </div>
       </div>
@@ -87,8 +91,9 @@
     </main>
   </div>
 
-  <!-- Firebase SDK (compat) — required for multiplayer -->
+  <!-- Firebase SDK (compat) — required for multiplayer + auth -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/data.js"></script>

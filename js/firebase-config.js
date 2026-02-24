@@ -2,14 +2,36 @@
 // Fill in your Firebase project credentials.
 // Firebase Console → Project Settings → General → Your Apps → Web app → SDK snippet
 //
-// After setting up, add these rules in Firebase Console → Realtime Database → Rules:
+// SETUP REQUIRED IN FIREBASE CONSOLE:
+//
+// 1. Authentication → Sign-in method → Enable "Email/Password"
+//
+// 2. Realtime Database → Rules → paste:
 //   {
 //     "rules": {
 //       "sessions": {
-//         "$sessionId": {
-//           ".read":  true,
-//           ".write": true
+//         "$sessionId": { ".read": true, ".write": true }
+//       },
+//       "matches": {
+//         ".read": true,
+//         ".write": "auth != null && auth.token.email == 'cristiansan@gmail.com'",
+//         "$matchId": {
+//           ".write": "auth != null"
 //         }
+//       }
+//     }
+//   }
+//   (any logged-in user can save matches; only admin email can delete the whole ranking)
+//
+// 4. Storage → Rules → paste:
+//   rules_version = '2';
+//   service firebase.storage {
+//     match /b/{bucket}/o {
+//       match /matches/{matchId}/screenshots/{filename} {
+//         allow read: true;
+//         allow write: if request.auth != null
+//                      && request.resource.size <= 1 * 1024 * 1024
+//                      && request.resource.contentType.matches('image/.*');
 //       }
 //     }
 //   }

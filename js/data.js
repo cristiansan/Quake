@@ -46,9 +46,17 @@ function getMatches() {
 }
 
 function saveMatch(match) {
+  // localStorage (keeps local history as backup)
   const matches = getMatches();
   matches.unshift(match);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(matches));
+
+  // Firebase global ranking (if SDK is loaded and app is initialized)
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    firebase.database().ref('matches/' + match.id).set(match).catch(function (err) {
+      console.error('Error al guardar en Firebase:', err);
+    });
+  }
 }
 
 function clearMatches() {

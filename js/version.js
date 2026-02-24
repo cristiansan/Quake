@@ -1,7 +1,17 @@
 (function () {
-  const VERSION = 'v0.4';
+  const VERSION = 'v0.5';
 
   const CHANGELOG = [
+    {
+      version: 'v0.5',
+      changes: [
+        'Login y registro de usuarios con Firebase Authentication',
+        'Campo "Nombre en Quake" en el registro, se auto-completa en Jugador 1 al iniciar sesión',
+        'Ranking global en Firebase: solo usuarios registrados pueden guardar resultados',
+        'Solo el administrador puede borrar el ranking',
+        'Renombrado a Quake Champions',
+      ],
+    },
     {
       version: 'v0.4',
       changes: [

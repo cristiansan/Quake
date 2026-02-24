@@ -528,8 +528,21 @@
 
     const saveBtn  = document.getElementById('save-btn');
     const savedMsg = document.getElementById('already-saved-msg');
-    if (saveBtn)  saveBtn.style.display  = resultSaved ? 'none'  : 'block';
-    if (savedMsg) savedMsg.style.display = resultSaved ? 'block' : 'none';
+    const anonNote = document.getElementById('anon-save-note');
+
+    // In fbMode check firebase auth; in legacy mode anyone can save locally
+    const user   = fbMode && typeof firebase !== 'undefined' ? firebase.auth().currentUser : true;
+    const authed = !!user;
+
+    if (resultSaved) {
+      if (saveBtn)  saveBtn.style.display  = 'none';
+      if (savedMsg) savedMsg.style.display = 'block';
+      if (anonNote) anonNote.style.display = 'none';
+    } else {
+      if (savedMsg) savedMsg.style.display = 'none';
+      if (saveBtn)  saveBtn.style.display  = authed ? 'block' : 'none';
+      if (anonNote) anonNote.style.display = authed ? 'none'  : 'block';
+    }
 
     const section = document.getElementById('result-section');
     if (section.style.display !== 'block') {

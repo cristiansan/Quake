@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso — Quake Champions</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <header class="site-header">
+      <h1>QUAKE CHAMPIONS</h1>
+      <p class="tagline">Map Pick &amp; Ban · Best of 3</p>
+    </header>
+
+    <main class="home-main">
+      <div class="card auth-card">
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login"    onclick="switchTab('login')">INICIAR SESIÓN</button>
+          <button class="auth-tab"        id="tab-register" onclick="switchTab('register')">REGISTRARSE</button>
+        </div>
+
+        <!-- ── LOGIN ── -->
+        <form id="form-login" class="auth-form" onsubmit="handleLogin(event)">
+          <div class="field">
+            <label for="login-email">EMAIL</label>
+            <input type="email" id="login-email" placeholder="usuario@email.com"
+                   required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="login-password">CONTRASEÑA</label>
+            <input type="password" id="login-password" placeholder="••••••••"
+                   required autocomplete="current-password">
+          </div>
+          <div id="login-error" class="form-error" style="display:none"></div>
+          <div id="login-info"  class="form-info"  style="display:none"></div>
+          <button type="submit" class="btn btn-primary" id="login-btn">ENTRAR</button>
+        </form>
+
+        <!-- ── REGISTER ── -->
+        <form id="form-register" class="auth-form" style="display:none" onsubmit="handleRegister(event)">
+          <div class="field">
+            <label for="reg-username">NOMBRE EN QUAKE</label>
+            <input type="text" id="reg-username" placeholder="Tu nick en el juego"
+                   required maxlength="24" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="reg-email">EMAIL</label>
+            <input type="email" id="reg-email" placeholder="usuario@email.com"
+                   required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="reg-password">CONTRASEÑA</label>
+            <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres"
+                   required autocomplete="new-password" minlength="6">
+          </div>
+          <div class="field">
+            <label for="reg-confirm">CONFIRMAR CONTRASEÑA</label>
+            <input type="password" id="reg-confirm" placeholder="Repetí tu contraseña"
+                   required autocomplete="new-password">
+          </div>
+          <div id="reg-error"   class="form-error"   style="display:none"></div>
+          <div id="reg-success" class="form-success" style="display:none"></div>
+          <button type="submit" class="btn btn-primary" id="reg-btn">CREAR CUENTA</button>
+        </form>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/version.js"></script>
+  <script>
+    // ── Redirect destination after login ──────────────────────────────────────
+    const nextUrl    = new URLSearchParams(window.location.search).get('next') || 'index.html';
+    const unverified = new URLSearchParams(window.location.search).has('unverified');
+
+    // If already logged in, skip login page
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        window.location.href = nextUrl;
+      }
+    });
+
+    // Show info message for unverified redirects
+    if (unverified) {
+      const el = document.getElementById('login-info');
+      el.textContent   = 'Verificá tu email antes de entrar. Revisá tu bandeja de entrada.';
+      el.style.display = 'block';
+    }
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      document.getElementById('form-login').style.display    = tab === 'login'    ? '' : 'none';
+      document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none';
+      document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+      document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+      // Clear messages on tab switch
+      ['login-error','login-info','reg-error','reg-success'].forEach(function (id) {
+        document.getElementById(id).style.display = 'none';
+      });
+    }
+
+    function setLoading(btn, loading) {
+      btn.disabled      = loading;
+      btn.style.opacity = loading ? '0.55' : '';
+    }
+
+    // ── Login ─────────────────────────────────────────────────────────────────
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errEl    = document.getElementById('login-error');
+      const infoEl   = document.getElementById('login-info');
+      const btn      = document.getElementById('login-btn');
+
+      errEl.style.display  = 'none';
+      infoEl.style.display = 'none';
+      setLoading(btn, true);
+
+      try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        window.location.href = nextUrl;
+
+      } catch (err) {
+        errEl.textContent   = authErrorMsg(err.code);
+        errEl.style.display = 'block';
+      } finally {
+        setLoading(btn, false);
+      }
+    }
+
+    // ── Register ──────────────────────────────────────────────────────────────
+    async function handleRegister(e) {
+      e.preventDefault();
+      const username = document.getElementById('reg-username').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+      const errEl    = document.getElementById('reg-error');
+      const succEl   = document.getElementById('reg-success');
+      const btn      = document.getElementById('reg-btn');
+
+      errEl.style.display  = 'none';
+      succEl.style.display = 'none';
+
+      if (!username) {
+        errEl.textContent   = 'Ingresá tu nombre en Quake.';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (password !== confirm) {
+        errEl.textContent   = 'Las contraseñas no coinciden.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      setLoading(btn, true);
+
+      try {
+        const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        await cred.user.updateProfile({ displayName: username });
+        await cred.user.sendEmailVerification();
+        await firebase.auth().signOut();
+
+        succEl.textContent   = '✓ Cuenta creada para ' + username + '. Te enviamos un email de verificación. Iniciá sesión cuando quieras.';
+        succEl.style.display = 'block';
+        document.getElementById('form-register').reset();
+
+      } catch (err) {
+        errEl.textContent   = authErrorMsg(err.code);
+        errEl.style.display = 'block';
+      } finally {
+        setLoading(btn, false);
+      }
+    }
+
+    // ── Error messages ────────────────────────────────────────────────────────
+    function authErrorMsg(code) {
+      const msgs = {
+        'auth/invalid-email':          'Email inválido.',
+        'auth/user-not-found':         'No existe una cuenta con ese email.',
+        'auth/wrong-password':         'Contraseña incorrecta.',
+        'auth/invalid-credential':     'Email o contraseña incorrectos.',
+        'auth/email-already-in-use':   'Ya existe una cuenta con ese email.',
+        'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres.',
+        'auth/too-many-requests':      'Demasiados intentos. Intentá más tarde.',
+        'auth/network-request-failed': 'Error de red. Verificá tu conexión.',
+      };
+      return msgs[code] || 'Ocurrió un error. Intentá de nuevo.';
+    }
+  </script>
+</body>
+</html>
