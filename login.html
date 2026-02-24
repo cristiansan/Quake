@@ -34,6 +34,12 @@
             <input type="password" id="login-password" placeholder="••••••••"
                    required autocomplete="current-password">
           </div>
+          <div class="field-checkbox">
+            <label class="checkbox-label">
+              <input type="checkbox" id="remember-me" checked>
+              RECORDAR SESIÓN
+            </label>
+          </div>
           <div id="login-error" class="form-error" style="display:none"></div>
           <div id="login-info"  class="form-info"  style="display:none"></div>
           <button type="submit" class="btn btn-primary" id="login-btn">ENTRAR</button>
@@ -125,6 +131,11 @@
       setLoading(btn, true);
 
       try {
+        const remember = document.getElementById('remember-me').checked;
+        await firebase.auth().setPersistence(
+          remember ? firebase.auth.Auth.Persistence.LOCAL
+                   : firebase.auth.Auth.Persistence.SESSION
+        );
         await firebase.auth().signInWithEmailAndPassword(email, password);
         // Reload profile to ensure displayName is available before redirecting
         await firebase.auth().currentUser.reload();

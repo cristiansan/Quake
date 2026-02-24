@@ -887,6 +887,28 @@ td.maps-cell { font-size: 0.82rem; color: var(--text-dim); }
   line-height: 1.5;
 }
 
+.field-checkbox {
+  margin-bottom: 1rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .btn-link {
   background: none;
   border: none;
