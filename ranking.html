@@ -10,50 +10,53 @@
   <div class="page">
 
     <header class="site-header compact">
-      <a href="index.html" class="back-link">← INICIO</a>
-      <h1>RANKING</h1>
+      <a href="index.html" class="back-link" data-i18n="back_home">← INICIO</a>
+      <h1 data-i18n="ranking">RANKING</h1>
       <div style="display:flex;align-items:center;gap:0.5rem">
         <div id="admin-actions" style="display:none">
-          <button onclick="clearData()" class="btn-danger-sm">BORRAR TODO</button>
+          <button onclick="clearData()" class="btn-danger-sm" data-i18n="clear_all">BORRAR TODO</button>
         </div>
         <div id="ranking-auth-actions"></div>
       </div>
     </header>
 
+    <!-- LANGUAGE SELECTOR (inline, below header) -->
+    <div id="lang-selector-slot"></div>
+
     <main class="ranking-main">
 
       <!-- STANDINGS -->
       <section class="standings-section">
-        <h2>TABLA DE POSICIONES</h2>
+        <h2 data-i18n="standings">TABLA DE POSICIONES</h2>
         <table class="standings-table">
           <thead>
             <tr>
               <th>#</th>
-              <th>JUGADOR</th>
+              <th data-i18n="player_col">JUGADOR</th>
               <th>W — L</th>
               <th>WIN%</th>
             </tr>
           </thead>
           <tbody id="standings-body">
-            <tr><td colspan="4" class="empty">Cargando...</td></tr>
+            <tr><td colspan="4" class="empty" data-i18n="loading">Cargando...</td></tr>
           </tbody>
         </table>
       </section>
 
       <!-- MATCH HISTORY -->
       <section class="history-section">
-        <h2>HISTORIAL DE PARTIDAS</h2>
+        <h2 data-i18n="match_history">HISTORIAL DE PARTIDAS</h2>
         <table class="history-table">
           <thead>
             <tr>
-              <th>FECHA</th>
-              <th>PARTIDA</th>
+              <th data-i18n="date_col">FECHA</th>
+              <th data-i18n="match_col">PARTIDA</th>
               <th>SCORE</th>
-              <th>MAPAS</th>
+              <th data-i18n="maps_col">MAPAS</th>
             </tr>
           </thead>
           <tbody id="history-body">
-            <tr><td colspan="4" class="empty">Cargando...</td></tr>
+            <tr><td colspan="4" class="empty" data-i18n="loading">Cargando...</td></tr>
           </tbody>
         </table>
       </section>
@@ -65,7 +68,7 @@
   <div id="screenshots-modal" class="screenshots-modal">
     <div class="screenshots-inner">
       <div class="screenshots-header">
-        <span class="screenshots-title">SCREENSHOTS</span>
+        <span class="screenshots-title" data-i18n="screenshots">SCREENSHOTS</span>
         <button class="changelog-close" onclick="window.closeScreenshots()">✕</button>
       </div>
       <div id="screenshots-body" class="screenshots-body"></div>
@@ -77,6 +80,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/data.js"></script>
   <script src="js/ranking.js"></script>
   <script src="js/version.js"></script>
@@ -87,7 +91,7 @@
       if (user) {
         container.innerHTML =
           '<span class="auth-user-email">' + user.email + '</span>' +
-          '<button class="btn-signout" onclick="firebase.auth().signOut().then(()=>window.location.reload())">SALIR</button>';
+          '<button class="btn-signout" onclick="firebase.auth().signOut().then(()=>window.location.reload())">' + t('logout') + '</button>';
         container.className = 'auth-user-bar';
         container.style.marginBottom = '0';
 
@@ -96,7 +100,7 @@
           document.getElementById('admin-actions').style.display = 'block';
         }
       } else {
-        container.innerHTML = '<a href="login.html" class="btn-login-link">INICIAR SESIÓN</a>';
+        container.innerHTML = '<a href="login.html" class="btn-login-link">' + t('login_tab') + '</a>';
       }
     });
 

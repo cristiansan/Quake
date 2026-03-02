@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = 'v0.5';
+  const VERSION = 'v0.6';
 
   const CHANGELOG = [
     {
@@ -57,7 +57,7 @@
     const badge = document.createElement('div');
     badge.className   = 'version-badge';
     badge.textContent = VERSION;
-    badge.title       = 'Ver changelog';
+    badge.title       = typeof t === 'function' ? t('see_changelog') : 'Ver changelog';
     badge.addEventListener('click', function () {
       document.getElementById('changelog-modal').classList.add('open');
     });
@@ -72,13 +72,15 @@
         </ul>
       </div>`).join('');
 
+    const changelogTitle = typeof t === 'function' ? t('changelog') : 'CHANGELOG';
+
     const modal = document.createElement('div');
     modal.id        = 'changelog-modal';
     modal.className = 'changelog-modal';
     modal.innerHTML = `
       <div class="changelog-inner">
         <div class="changelog-header">
-          <span class="changelog-title">CHANGELOG</span>
+          <span class="changelog-title">${changelogTitle}</span>
           <button class="changelog-close" id="changelog-close-btn">✕</button>
         </div>
         <div class="changelog-body">${entriesHtml}</div>

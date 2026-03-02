@@ -219,6 +219,11 @@
     }
   }
 
+  // Returns an HTML span for a player with their color class
+  function playerSpan(p) {
+    return `<span class="log-p${p + 1}">${players[p]}</span>`;
+  }
+
   // ── HELPERS ──────────────────────────────────────────────────────────────────
   function freshChampPool() {
     const usedNames = new Set();
@@ -272,8 +277,8 @@
     champPool = freshChampPool();
     champSeq  = buildChampSeq(mapsToPlay[champMapIndex].homePlayer);
     champStep = 0;
-    const label = champMapIndex === 2 ? 'DECIDER' : `MAP ${champMapIndex + 1}`;
-    addLog('separator', `── Champions para <strong>${label}: ${mapsToPlay[champMapIndex].mapName}</strong>`);
+    const label = champMapIndex === 2 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
+    addLog('separator', t('log_champs_for', { label: label, mapName: mapsToPlay[champMapIndex].mapName }));
     writeState();
     if (!fbMode) renderAll();
   }
@@ -292,10 +297,12 @@
 
     const isBan  = seq.action === 'ban';
     if (isBan) SFX.ban(); else SFX.pick();
-    const verb   = isBan ? 'baneó' : 'eligió';
-    const suffix = seq.isDecider ? ` <span class="log-decider">(MAP 3)</span>` : '';
+    const pSpan  = playerSpan(seq.player);
+    const suffix = seq.isDecider ? ` ${t('log_map3')}` : '';
     addLog(isBan ? 'ban' : 'pick',
-      `<span class="log-p${seq.player + 1}">${players[seq.player]}</span> ${verb} <strong>${map.name}</strong>${suffix}`);
+      isBan
+        ? t('log_map_banned', { playerSpan: pSpan, mapName: map.name, suffix: suffix })
+        : t('log_map_picked', { playerSpan: pSpan, mapName: map.name, suffix: suffix }));
 
     mapStep++;
     if (mapStep >= MAP_SEQ.length) { finishMapPhase(); return; }
@@ -315,14 +322,15 @@
     champ.actionBy = seq.player;
 
     const result = results[champMapIndex];
+    const pSpan  = playerSpan(seq.player);
     if (seq.action === 'ban') {
       SFX.ban();
       result.bans.push(champ.name);
-      addLog('ban',  `<span class="log-p${seq.player + 1}">${players[seq.player]}</span> baneó champion <strong>${champ.name}</strong>`);
+      addLog('ban',  t('log_champ_banned', { playerSpan: pSpan, champName: champ.name }));
     } else {
       SFX.pick();
       result.picks[seq.player] = champ.name;
-      addLog('pick', `<span class="log-p${seq.player + 1}">${players[seq.player]}</span> eligió <strong>${champ.name}</strong>`);
+      addLog('pick', t('log_champ_picked', { playerSpan: pSpan, champName: champ.name }));
     }
 
     champStep++;
@@ -350,7 +358,7 @@
     if (!fbMode) return;
     const el = document.getElementById('my-player-badge');
     if (!el) return;
-    el.textContent   = `Jugando como: ${players[myPlayer] || '...'}`;
+    el.textContent   = t('playing_as', { player: players[myPlayer] || '...' });
     el.style.display = 'block';
   }
 
@@ -368,9 +376,9 @@
     const deciderMap = mapPool.find(m => m.status === 'decider');
 
     const slots = [
-      { label: 'MAP 1',           map: picks[0]   || null, isDecider: false },
-      { label: 'MAP 2',           map: picks[1]   || null, isDecider: false },
-      { label: 'MAP 3 · DECIDER', map: deciderMap || null, isDecider: true  },
+      { label: t('map_1'),         map: picks[0]   || null, isDecider: false },
+      { label: t('map_2'),         map: picks[1]   || null, isDecider: false },
+      { label: t('map_3_decider'), map: deciderMap || null, isDecider: true  },
     ];
 
     container.innerHTML = slots.map((slot, i) => {
@@ -386,7 +394,7 @@
       if (isCurrentChamp) cls += ' current-champ';
 
       const banHtml    = bans.length
-        ? `<div class="tracker-ban">ban: ${bans.join(', ')}</div>` : '';
+        ? `<div class="tracker-ban">${t('tracker_bans', { bans: bans.join(', ') })}</div>` : '';
       const champsHtml = (p0champ || p1champ) ? `
         <div class="tracker-champs">
           <div class="tracker-champ tracker-p1">${players[0]}: <strong>${p0champ || '—'}</strong></div>
@@ -415,15 +423,15 @@
   function renderPhaseIndicator() {
     const el = document.getElementById('phase-indicator');
     if (phase === 'maps') {
-      el.textContent = 'FASE DE MAPAS';
+      el.textContent = t('phase_maps');
       el.className   = 'phase-indicator phase-maps';
     } else if (phase === 'champs') {
-      const label   = champMapIndex === 2 ? 'DECIDER' : `MAP ${champMapIndex + 1}`;
+      const label   = champMapIndex === 2 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
       const mapName = mapsToPlay[champMapIndex]?.mapName || '';
-      el.textContent = `CHAMPIONS — ${label}: ${mapName}`;
+      el.textContent = t('champions_phase', { label: label, map: mapName });
       el.className   = 'phase-indicator phase-champs';
     } else {
-      el.textContent = 'PICK & BAN COMPLETO';
+      el.textContent = t('pick_ban_complete');
       el.className   = 'phase-indicator phase-done';
     }
   }
@@ -435,7 +443,7 @@
 
     if (phase === 'done') {
       bar.className        = 'turn-bar complete';
-      turnText.textContent = 'PICK & BAN COMPLETO';
+      turnText.textContent = t('pick_ban_complete');
       counter.textContent  = '';
       return;
     }
@@ -443,14 +451,14 @@
     const seq     = phase === 'maps' ? MAP_SEQ[mapStep]   : champSeq[champStep];
     const total   = phase === 'maps' ? MAP_SEQ.length     : champSeq.length;
     const current = phase === 'maps' ? mapStep + 1        : champStep + 1;
-    const subject = phase === 'maps' ? 'UN MAPA'          : 'UN CHAMPION';
-    const verb    = seq.action === 'ban' ? 'BANEA' : 'ELIGE';
+    const subject = phase === 'maps' ? t('a_map')         : t('a_champion');
+    const verb    = seq.action === 'ban' ? t('ban') : t('pick');
 
-    counter.textContent = `PASO ${current} / ${total}`;
+    counter.textContent = t('step', { current: current, total: total });
 
     if (fbMode && !isMyTurn()) {
       bar.className        = 'turn-bar waiting';
-      turnText.textContent = `Esperando a ${players[seq.player].toUpperCase()}...`;
+      turnText.textContent = t('waiting_for', { player: players[seq.player].toUpperCase() });
       return;
     }
 
@@ -501,9 +509,9 @@
 
       const badgeEl = document.createElement('span');
       badgeEl.className = 'map-card-badge';
-      if      (map.status === 'banned')  badgeEl.textContent = 'BANNED';
-      else if (map.status === 'picked')  badgeEl.textContent = `MAP ${mapPickNumber(map)}`;
-      else if (map.status === 'decider') badgeEl.textContent = 'DECIDER';
+      if      (map.status === 'banned')  badgeEl.textContent = t('banned');
+      else if (map.status === 'picked')  badgeEl.textContent = t('map_n', { n: mapPickNumber(map) });
+      else if (map.status === 'decider') badgeEl.textContent = t('decider');
 
       card.appendChild(iconEl);
       card.appendChild(nameEl);
@@ -539,7 +547,7 @@
 
       const badgeEl = document.createElement('span');
       badgeEl.className = 'map-card-badge';
-      if      (champ.status === 'banned') badgeEl.textContent = 'BANNED';
+      if      (champ.status === 'banned') badgeEl.textContent = t('banned');
       else if (champ.status === 'picked') badgeEl.textContent = players[champ.actionBy].toUpperCase();
 
       card.appendChild(iconEl);
@@ -609,9 +617,9 @@
     const str = buildResultString();
     const btn = document.getElementById('copy-btn');
     const finish = (ok) => {
-      btn.textContent = ok ? '✓ COPIADO' : 'ERROR';
+      btn.textContent = ok ? t('copied') : t('error');
       btn.disabled    = true;
-      setTimeout(() => { btn.textContent = 'COPY RESULT STRING'; btn.disabled = false; }, 2000);
+      setTimeout(() => { btn.textContent = t('copy_result'); btn.disabled = false; }, 2000);
     };
     if (navigator.clipboard) {
       navigator.clipboard.writeText(str).then(() => finish(true)).catch(() => finish(false));
@@ -632,7 +640,7 @@
 
     const finish = () => {
       if (btn) {
-        btn.textContent = '✓ COPIADO';
+        btn.textContent = t('copied');
         setTimeout(() => { btn.textContent = origText; }, 2000);
       }
     };
@@ -658,8 +666,8 @@
     if (resultSaved) return;
     const winnerRadio = document.querySelector('input[name="winner"]:checked');
     const scoreRadio  = document.querySelector('input[name="score"]:checked');
-    if (!winnerRadio) { alert('Seleccioná un ganador.'); return; }
-    if (!scoreRadio)  { alert('Seleccioná el score.');   return; }
+    if (!winnerRadio) { alert(t('select_winner')); return; }
+    if (!scoreRadio)  { alert(t('select_score'));  return; }
 
     const match = {
       id:      Date.now(),
@@ -686,7 +694,7 @@
     window._fbDb.ref('sessions/' + sessionId).on('value', snap => {
       const data = snap.val();
       if (!data) {
-        document.getElementById('turn-text').textContent = 'Esperando sesión...';
+        document.getElementById('turn-text').textContent = t('waiting_session');
         return;
       }
       const prevTurn = _prevIsMyTurn;
@@ -697,7 +705,7 @@
       renderAll();
     }, err => {
       console.error('Firebase error:', err);
-      document.getElementById('turn-text').textContent = 'Error de conexión con Firebase.';
+      document.getElementById('turn-text').textContent = t('firebase_error');
     });
   }
 
@@ -705,7 +713,8 @@
   window.addEventListener('DOMContentLoaded', () => {
     if (!fbMode) {
       // Legacy mode (no session in URL, or Firebase not available)
-      addLog('separator', `Sorteo: empieza baneando <span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`);
+      const pSpan = `<span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`;
+      addLog('separator', t('log_sorteo', { playerSpan: pSpan }));
       renderAll();
       return;
     }
@@ -724,7 +733,8 @@
       // Player 1: initialize session if it doesn't exist yet, then subscribe
       window._fbDb.ref('sessions/' + sessionId).once('value').then(snap => {
         if (!snap.exists()) {
-          addLog('separator', `Sorteo: empieza baneando <span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`);
+          const pSpan = `<span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`;
+          addLog('separator', t('log_sorteo', { playerSpan: pSpan }));
           writeState();
         }
         subscribeToSession();

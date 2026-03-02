@@ -11,7 +11,7 @@
 
     <!-- HEADER -->
     <header class="site-header compact">
-      <a href="index.html" class="back-link">← INICIO</a>
+      <a href="index.html" class="back-link" data-i18n="back_home">← INICIO</a>
       <div class="match-title">
         <span id="p1-name" class="name-p1">Jugador 1</span>
         <span class="vs">VS</span>
@@ -23,6 +23,9 @@
       </div>
     </header>
 
+    <!-- LANGUAGE SELECTOR (inline, below match title) -->
+    <div id="lang-selector-slot"></div>
+
     <!-- PLAYER BADGE (shown in multiplayer mode) -->
     <div id="my-player-badge" class="my-player-badge" style="display:none"></div>
 
@@ -32,11 +35,11 @@
       <div id="match-tracker" class="match-tracker"></div>
 
       <!-- PHASE INDICATOR -->
-      <div id="phase-indicator" class="phase-indicator phase-maps">FASE DE MAPAS</div>
+      <div id="phase-indicator" class="phase-indicator phase-maps" data-i18n="phase_maps">FASE DE MAPAS</div>
 
       <!-- TURN INDICATOR -->
       <div id="turn-bar" class="turn-bar">
-        <span id="turn-text">Cargando...</span>
+        <span id="turn-text" data-i18n="loading">Cargando...</span>
         <span id="step-counter" class="step-counter"></span>
       </div>
 
@@ -48,14 +51,14 @@
 
       <!-- ACTION LOG -->
       <div class="log-section">
-        <h3>ACCIONES</h3>
+        <h3 data-i18n="actions">ACCIONES</h3>
         <ul id="action-log" class="action-log"></ul>
       </div>
 
       <!-- RESULT SECTION (shown after all phases complete) -->
       <div id="result-section" class="result-section" style="display:none">
         <div class="save-result">
-          <h3>REGISTRAR RESULTADO</h3>
+          <h3 data-i18n="register_result">REGISTRAR RESULTADO</h3>
 
           <div class="winner-select">
             <label class="radio-label">
@@ -77,14 +80,14 @@
             </label>
           </div>
 
-          <button id="copy-btn" onclick="copyResult()" class="btn btn-copy">COPY RESULT STRING</button>
-          <button id="save-btn" onclick="saveResult()" class="btn btn-primary">GUARDAR Y VER RANKING</button>
-          <div id="already-saved-msg" class="already-saved" style="display:none">✓ Resultado ya guardado por el otro jugador.</div>
+          <button id="copy-btn" onclick="copyResult()" class="btn btn-copy" data-i18n="copy_result">COPY RESULT STRING</button>
+          <button id="save-btn" onclick="saveResult()" class="btn btn-primary" data-i18n="save_ranking">GUARDAR Y VER RANKING</button>
+          <div id="already-saved-msg" class="already-saved" style="display:none" data-i18n="already_saved">✓ Resultado ya guardado por el otro jugador.</div>
           <div id="anon-save-note" class="anon-save-note" style="display:none">
-            <a href="login.html" class="btn-login-link">INICIAR SESIÓN</a>
-            <span class="auth-hint">para guardar en el ranking global</span>
+            <a href="login.html" class="btn-login-link" data-i18n="login_tab">INICIAR SESIÓN</a>
+            <span class="auth-hint" data-i18n="login_to_save_global">para guardar en el ranking global</span>
           </div>
-          <a href="index.html" class="btn btn-secondary">NUEVA PARTIDA (SIN GUARDAR)</a>
+          <a href="index.html" class="btn btn-secondary" data-i18n="new_match_no_save">NUEVA PARTIDA (SIN GUARDAR)</a>
         </div>
       </div>
 
@@ -96,6 +99,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/data.js"></script>
   <script src="js/pickban.js"></script>
   <script src="js/version.js"></script>

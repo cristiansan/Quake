@@ -16,22 +16,22 @@
 
     <main class="home-main">
       <div class="card form-card">
-        <h2>NUEVA PARTIDA</h2>
+        <h2 data-i18n="new_match">NUEVA PARTIDA</h2>
         <form id="matchForm">
           <div class="field">
-            <label for="p1">JUGADOR 1</label>
-            <input type="text" id="p1" maxlength="24" placeholder="Nombre" autocomplete="off" required>
+            <label for="p1" data-i18n="player_1">JUGADOR 1</label>
+            <input type="text" id="p1" maxlength="24" data-i18n-placeholder="name_placeholder" placeholder="Nombre" autocomplete="off" required>
           </div>
           <div class="field">
-            <label for="p2">JUGADOR 2</label>
-            <input type="text" id="p2" maxlength="24" placeholder="Nombre" autocomplete="off" required>
+            <label for="p2" data-i18n="player_2">JUGADOR 2</label>
+            <input type="text" id="p2" maxlength="24" data-i18n-placeholder="name_placeholder" placeholder="Nombre" autocomplete="off" required>
           </div>
-          <button type="submit" class="btn btn-primary">INICIAR PICK &amp; BAN</button>
-          <div id="name-error" class="form-error" style="display:none">Los nombres no pueden ser iguales.</div>
+          <button type="submit" class="btn btn-primary" data-i18n="start_pickban">INICIAR PICK &amp; BAN</button>
+          <div id="name-error" class="form-error" style="display:none" data-i18n="names_equal_error">Los nombres no pueden ser iguales.</div>
         </form>
       </div>
 
-      <a href="ranking.html" class="btn btn-secondary">VER RANKING</a>
+      <a href="ranking.html" class="btn btn-secondary" data-i18n="view_ranking">VER RANKING</a>
 
       <!-- Auth section: login button or user info -->
       <div id="auth-section" class="home-auth-section">
@@ -44,6 +44,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/version.js"></script>
   <script>
     function genSessionId() {
@@ -88,13 +89,13 @@
           const displayName = freshUser.displayName || freshUser.email;
           section.innerHTML =
             '<span class="auth-user-email">' + displayName + '</span>' +
-            '<button class="btn-signout" onclick="firebase.auth().signOut().then(function(){localStorage.removeItem(\'qc_username\')})">SALIR</button>';
+            '<button class="btn-signout" onclick="firebase.auth().signOut().then(function(){localStorage.removeItem(\'qc_username\')})">' + t('logout') + '</button>';
           section.className = 'home-auth-section logged-in';
         });
       } else {
         section.innerHTML =
-          '<a href="login.html" class="btn-login-link">INICIAR SESIÓN / REGISTRARSE</a>' +
-          '<span class="auth-hint">para guardar resultados en el ranking</span>';
+          '<a href="login.html" class="btn-login-link">' + t('login_register') + '</a>' +
+          '<span class="auth-hint">' + t('login_to_save') + '</span>';
         section.className = 'home-auth-section';
       }
     });

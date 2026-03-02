@@ -18,58 +18,58 @@
       <div class="card auth-card">
 
         <div class="auth-tabs">
-          <button class="auth-tab active" id="tab-login"    onclick="switchTab('login')">INICIAR SESIÓN</button>
-          <button class="auth-tab"        id="tab-register" onclick="switchTab('register')">REGISTRARSE</button>
+          <button class="auth-tab active" id="tab-login"    onclick="switchTab('login')"    data-i18n="login_tab">INICIAR SESIÓN</button>
+          <button class="auth-tab"        id="tab-register" onclick="switchTab('register')" data-i18n="register_tab">REGISTRARSE</button>
         </div>
 
         <!-- ── LOGIN ── -->
         <form id="form-login" class="auth-form" onsubmit="handleLogin(event)">
           <div class="field">
-            <label for="login-email">EMAIL</label>
+            <label for="login-email" data-i18n="email">EMAIL</label>
             <input type="email" id="login-email" placeholder="usuario@email.com"
                    required autocomplete="email">
           </div>
           <div class="field">
-            <label for="login-password">CONTRASEÑA</label>
+            <label for="login-password" data-i18n="password">CONTRASEÑA</label>
             <input type="password" id="login-password" placeholder="••••••••"
                    required autocomplete="current-password">
           </div>
           <div class="field-checkbox">
             <label class="checkbox-label">
               <input type="checkbox" id="remember-me" checked>
-              RECORDAR SESIÓN
+              <span data-i18n="remember_session">RECORDAR SESIÓN</span>
             </label>
           </div>
           <div id="login-error" class="form-error" style="display:none"></div>
           <div id="login-info"  class="form-info"  style="display:none"></div>
-          <button type="submit" class="btn btn-primary" id="login-btn">ENTRAR</button>
+          <button type="submit" class="btn btn-primary" id="login-btn" data-i18n="enter_btn">ENTRAR</button>
         </form>
 
         <!-- ── REGISTER ── -->
         <form id="form-register" class="auth-form" style="display:none" onsubmit="handleRegister(event)">
           <div class="field">
-            <label for="reg-username">NOMBRE EN QUAKE</label>
-            <input type="text" id="reg-username" placeholder="Tu nick en el juego"
+            <label for="reg-username" data-i18n="quake_name">NOMBRE EN QUAKE</label>
+            <input type="text" id="reg-username" data-i18n-placeholder="nick_placeholder" placeholder="Tu nick en el juego"
                    required maxlength="24" autocomplete="off">
           </div>
           <div class="field">
-            <label for="reg-email">EMAIL</label>
+            <label for="reg-email" data-i18n="email">EMAIL</label>
             <input type="email" id="reg-email" placeholder="usuario@email.com"
                    required autocomplete="email">
           </div>
           <div class="field">
-            <label for="reg-password">CONTRASEÑA</label>
-            <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres"
+            <label for="reg-password" data-i18n="password">CONTRASEÑA</label>
+            <input type="password" id="reg-password" data-i18n-placeholder="min_6_chars" placeholder="Mínimo 6 caracteres"
                    required autocomplete="new-password" minlength="6">
           </div>
           <div class="field">
-            <label for="reg-confirm">CONFIRMAR CONTRASEÑA</label>
-            <input type="password" id="reg-confirm" placeholder="Repetí tu contraseña"
+            <label for="reg-confirm" data-i18n="confirm_password">CONFIRMAR CONTRASEÑA</label>
+            <input type="password" id="reg-confirm" data-i18n-placeholder="repeat_password" placeholder="Repetí tu contraseña"
                    required autocomplete="new-password">
           </div>
           <div id="reg-error"   class="form-error"   style="display:none"></div>
           <div id="reg-success" class="form-success" style="display:none"></div>
-          <button type="submit" class="btn btn-primary" id="reg-btn">CREAR CUENTA</button>
+          <button type="submit" class="btn btn-primary" id="reg-btn" data-i18n="create_account">CREAR CUENTA</button>
         </form>
 
       </div>
@@ -80,6 +80,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/version.js"></script>
   <script>
     // ── Redirect destination after login ──────────────────────────────────────
@@ -96,7 +97,7 @@
     // Show info message for unverified redirects
     if (unverified) {
       const el = document.getElementById('login-info');
-      el.textContent   = 'Verificá tu email antes de entrar. Revisá tu bandeja de entrada.';
+      el.textContent   = t('verify_email_msg');
       el.style.display = 'block';
     }
 
@@ -166,12 +167,12 @@
       succEl.style.display = 'none';
 
       if (!username) {
-        errEl.textContent   = 'Ingresá tu nombre en Quake.';
+        errEl.textContent   = t('enter_quake_name');
         errEl.style.display = 'block';
         return;
       }
       if (password !== confirm) {
-        errEl.textContent   = 'Las contraseñas no coinciden.';
+        errEl.textContent   = t('passwords_no_match');
         errEl.style.display = 'block';
         return;
       }
@@ -185,7 +186,7 @@
         await cred.user.sendEmailVerification();
         await firebase.auth().signOut();
 
-        succEl.textContent   = '✓ Cuenta creada para ' + username + '. Te enviamos un email de verificación. Iniciá sesión cuando quieras.';
+        succEl.textContent   = t('account_created', { username: username });
         succEl.style.display = 'block';
         document.getElementById('form-register').reset();
 
@@ -199,17 +200,17 @@
 
     // ── Error messages ────────────────────────────────────────────────────────
     function authErrorMsg(code) {
-      const msgs = {
-        'auth/invalid-email':          'Email inválido.',
-        'auth/user-not-found':         'No existe una cuenta con ese email.',
-        'auth/wrong-password':         'Contraseña incorrecta.',
-        'auth/invalid-credential':     'Email o contraseña incorrectos.',
-        'auth/email-already-in-use':   'Ya existe una cuenta con ese email.',
-        'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres.',
-        'auth/too-many-requests':      'Demasiados intentos. Intentá más tarde.',
-        'auth/network-request-failed': 'Error de red. Verificá tu conexión.',
+      const map = {
+        'auth/invalid-email':          'err_invalid_email',
+        'auth/user-not-found':         'err_user_not_found',
+        'auth/wrong-password':         'err_wrong_password',
+        'auth/invalid-credential':     'err_invalid_credential',
+        'auth/email-already-in-use':   'err_email_in_use',
+        'auth/weak-password':          'err_weak_password',
+        'auth/too-many-requests':      'err_too_many_requests',
+        'auth/network-request-failed': 'err_network',
       };
-      return msgs[code] || 'Ocurrió un error. Intentá de nuevo.';
+      return t(map[code] || 'err_generic');
     }
   </script>
 </body>

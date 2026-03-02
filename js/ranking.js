@@ -15,8 +15,9 @@
   }
 
   function formatDate(iso) {
-    const d = new Date(iso);
-    return d.toLocaleDateString('es-AR') + ' ' +
+    const d      = new Date(iso);
+    const locale = window.i18n ? window.i18n.locale() : 'es-AR';
+    return d.toLocaleDateString(locale) + ' ' +
            d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
@@ -26,7 +27,7 @@
     const tbody     = document.getElementById('standings-body');
 
     if (!standings.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin partidas. <a href="index.html">Crear una</a></td></tr>';
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">${t('no_matches')}</td></tr>`;
       return;
     }
 
@@ -47,7 +48,7 @@
     const tbody = document.getElementById('history-body');
 
     if (!matches.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin partidas registradas</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">${t('no_matches_recorded')}</td></tr>`;
       return;
     }
 
@@ -92,7 +93,7 @@
 
   // ── ADMIN: CLEAR DATA ─────────────────────────────────────────────────────────
   window.clearData = function () {
-    if (!confirm('¿Borrar TODOS los datos del ranking? Esta acción no se puede deshacer.')) return;
+    if (!confirm(t('confirm_clear'))) return;
     const fbAvailable = typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length;
     if (fbAvailable) {
       firebase.database().ref('matches').remove()
@@ -102,7 +103,7 @@
           renderHistory([]);
         })
         .catch(function () {
-          alert('No tenés permisos para borrar el ranking.');
+          alert(t('no_permissions'));
         });
     } else {
       clearMatches();
