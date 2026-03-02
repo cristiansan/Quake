@@ -1187,10 +1187,8 @@ td.maps-cell { font-size: 0.82rem; color: var(--text-dim); }
 .lang-btn.active { opacity: 1;   border-color: var(--accent);       color: var(--text); }
 
 .lang-btn[data-lang="en"] {
-  font-family: 'Orbitron', monospace;
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
   padding: 0.28rem 0.4rem;
 }
 
