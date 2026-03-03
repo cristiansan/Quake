@@ -389,6 +389,7 @@ body {
 @media (max-width: 480px) {
   .map-grid { grid-template-columns: repeat(2, 1fr); }
   .site-header .tagline { display: none; }
+  .form-card h2 { display: none; }
   .site-header.compact {
     display: grid;
     grid-template-columns: 1fr auto;
