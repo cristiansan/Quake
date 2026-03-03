@@ -1,9 +1,19 @@
 (function () {
-  const VERSION = 'v0.6';
+  const VERSION = 'v0.7';
 
   const CHANGELOG = [
     {
-      version: 'v0.5',
+      version: 'v0.7',
+      changes: [
+        'Mobile: ocultar tagline en index para ganar espacio en pantalla',
+        'Badge de versión movido a esquina superior derecha',
+        'Header en pickban.html rediseñado para mobile (CSS Grid): nombres en segunda fila',
+        'Badge de versión integrado junto al Bo3 en pickban, sin superposición',
+        'i18n: agregados inglés (EN) y francés (FR); orden ES · BR · EN · RU · FR',
+      ],
+    },
+    {
+      version: 'v0.6',
       changes: [
         'Login y registro de usuarios con Firebase Authentication',
         'Campo "Nombre en Quake" en el registro, se auto-completa en Jugador 1 al iniciar sesión',
@@ -61,7 +71,13 @@
     badge.addEventListener('click', function () {
       document.getElementById('changelog-modal').classList.add('open');
     });
-    document.body.appendChild(badge);
+    const headerRight = document.querySelector('.header-right');
+    if (headerRight) {
+      badge.classList.add('version-badge--inline');
+      headerRight.appendChild(badge);
+    } else {
+      document.body.appendChild(badge);
+    }
 
     // ── Changelog modal ──────────────────────────────────────────────────────
     const entriesHtml = CHANGELOG.map(entry => `

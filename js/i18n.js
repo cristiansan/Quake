@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    i18n.js — Internationalization for Quake Pick & Ban
-   Languages: es (default), en, pt, ru
+   Languages: es (default), en, fr, pt, ru
    ───────────────────────────────────────────────────────────────────────────── */
 (function () {
 
@@ -163,8 +163,8 @@
       playing_as:            'Playing as: {player}',
       a_map:                 'A MAP',
       a_champion:            'A CHAMPION',
-      ban:                   'BAN',
-      pick:                  'PICK',
+      ban:                   'BANS',
+      pick:                  'PICKS',
       banned:                'BANNED',
       decider:               'DECIDER',
       map_1:                 'MAP 1',
@@ -197,6 +197,99 @@
       confirm_clear:         'Delete ALL ranking data? This action cannot be undone.',
       no_permissions:        'You do not have permission to clear the ranking.',
       see_changelog:         'View changelog',
+      changelog:             'CHANGELOG',
+    },
+
+    // ── FRANÇAIS ─────────────────────────────────────────────────────────────
+    fr: {
+      back_home:             '← ACCUEIL',
+      loading:               'Chargement...',
+      login_tab:             'CONNEXION',
+      register_tab:          'INSCRIPTION',
+      logout:                'DÉCONNEXION',
+      login_register:        'CONNEXION / INSCRIPTION',
+      login_to_save:         'pour sauvegarder les résultats dans le classement',
+      new_match:             'NOUVELLE PARTIE',
+      player_1:              'JOUEUR 1',
+      player_2:              'JOUEUR 2',
+      name_placeholder:      'Nom',
+      start_pickban:         'DÉMARRER PICK & BAN',
+      names_equal_error:     'Les noms ne peuvent pas être identiques.',
+      view_ranking:          'VOIR LE CLASSEMENT',
+      email:                 'EMAIL',
+      password:              'MOT DE PASSE',
+      remember_session:      'SE SOUVENIR DE LA SESSION',
+      enter_btn:             'ENTRER',
+      quake_name:            'NOM DANS QUAKE',
+      nick_placeholder:      'Votre pseudo dans le jeu',
+      min_6_chars:           'Minimum 6 caractères',
+      confirm_password:      'CONFIRMER LE MOT DE PASSE',
+      repeat_password:       'Répétez votre mot de passe',
+      create_account:        'CRÉER UN COMPTE',
+      verify_email_msg:      'Vérifiez votre email avant de vous connecter. Consultez votre boîte de réception.',
+      enter_quake_name:      'Entrez votre nom dans Quake.',
+      passwords_no_match:    'Les mots de passe ne correspondent pas.',
+      account_created:       '✓ Compte créé pour {username}. Nous avons envoyé un email de vérification. Connectez-vous quand vous voulez.',
+      err_invalid_email:     'Adresse email invalide.',
+      err_user_not_found:    'Aucun compte trouvé avec cet email.',
+      err_wrong_password:    'Mot de passe incorrect.',
+      err_invalid_credential:'Email ou mot de passe incorrect.',
+      err_email_in_use:      'Un compte avec cet email existe déjà.',
+      err_weak_password:     'Le mot de passe doit comporter au moins 6 caractères.',
+      err_too_many_requests: 'Trop de tentatives. Réessayez plus tard.',
+      err_network:           'Erreur réseau. Vérifiez votre connexion.',
+      err_generic:           'Une erreur s\'est produite. Réessayez.',
+      actions:               'ACTIONS',
+      register_result:       'ENREGISTRER LE RÉSULTAT',
+      copy_result:           'COPIER LE RÉSULTAT',
+      save_ranking:          'SAUVEGARDER ET VOIR LE CLASSEMENT',
+      already_saved:         '✓ Résultat déjà sauvegardé par l\'autre joueur.',
+      login_to_save_global:  'pour sauvegarder dans le classement global',
+      new_match_no_save:     'NOUVELLE PARTIE (SANS SAUVEGARDER)',
+      phase_maps:            'PHASE DES CARTES',
+      pick_ban_complete:     'PICK & BAN TERMINÉ',
+      champions_phase:       'CHAMPIONS — {label}: {map}',
+      step:                  'ÉTAPE {current} / {total}',
+      waiting_for:           'En attente de {player}...',
+      waiting_session:       'En attente de la session...',
+      firebase_error:        'Erreur de connexion Firebase.',
+      playing_as:            'Vous jouez en tant que: {player}',
+      a_map:                 'UNE CARTE',
+      a_champion:            'UN CHAMPION',
+      ban:                   'BANNIT',
+      pick:                  'CHOISIT',
+      banned:                'BANNI',
+      decider:               'DÉCISIVE',
+      map_1:                 'CARTE 1',
+      map_2:                 'CARTE 2',
+      map_3_decider:         'CARTE 3 · DÉCISIVE',
+      map_n:                 'CARTE {n}',
+      tracker_bans:          'ban: {bans}',
+      log_sorteo:            'Tirage: {playerSpan} commence à bannir',
+      log_map_banned:        '{playerSpan} a banni <strong>{mapName}</strong>{suffix}',
+      log_map_picked:        '{playerSpan} a choisi <strong>{mapName}</strong>{suffix}',
+      log_map3:              '<span class="log-decider">(CARTE 3)</span>',
+      log_champ_banned:      '{playerSpan} a banni le champion <strong>{champName}</strong>',
+      log_champ_picked:      '{playerSpan} a choisi <strong>{champName}</strong>',
+      log_champs_for:        '── Champions pour <strong>{label}: {mapName}</strong>',
+      select_winner:         'Sélectionnez un gagnant.',
+      select_score:          'Sélectionnez le score.',
+      copied:                '✓ COPIÉ',
+      error:                 'ERREUR',
+      ranking:               'CLASSEMENT',
+      clear_all:             'TOUT EFFACER',
+      standings:             'TABLEAU DES SCORES',
+      player_col:            'JOUEUR',
+      match_history:         'HISTORIQUE DES PARTIES',
+      date_col:              'DATE',
+      match_col:             'PARTIE',
+      maps_col:              'CARTES',
+      no_matches:            'Pas de parties. <a href="index.html">En créer une</a>',
+      no_matches_recorded:   'Aucune partie enregistrée',
+      screenshots:           'CAPTURES D\'ÉCRAN',
+      confirm_clear:         'Supprimer TOUTES les données du classement? Cette action est irréversible.',
+      no_permissions:        'Vous n\'avez pas les droits pour effacer le classement.',
+      see_changelog:         'Voir le journal des modifications',
       changelog:             'CHANGELOG',
     },
 
@@ -388,10 +481,10 @@
   };
 
   // ── LANG METADATA ──────────────────────────────────────────────────────────
-  var LANGS   = ['es', 'en', 'pt', 'ru'];
-  var FLAGS   = { es: '🇪🇸', en: 'EN',   pt: '🇧🇷', ru: '🇷🇺' };
-  var LABELS  = { es: 'Español', en: 'English', pt: 'Português', ru: 'Русский' };
-  var LOCALES = { es: 'es-AR',   en: 'en-US',  pt: 'pt-BR',     ru: 'ru-RU'  };
+  var LANGS   = ['es', 'pt', 'en', 'ru', 'fr'];
+  var FLAGS   = { es: '🇪🇸', pt: '🇧🇷', en: 'EN', ru: '🇷🇺', fr: '🇫🇷' };
+  var LABELS  = { es: 'Español', pt: 'Português', en: 'English', ru: 'Русский', fr: 'Français' };
+  var LOCALES = { es: 'es-AR',   pt: 'pt-BR',     en: 'en-US',  ru: 'ru-RU',   fr: 'fr-FR'  };
 
   // ── STATE ──────────────────────────────────────────────────────────────────
   var _stored = localStorage.getItem('qc_lang');
