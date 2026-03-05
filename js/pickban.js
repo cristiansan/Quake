@@ -5,6 +5,12 @@
   const myPlayer  = parseInt(params.get('player') ?? '-1', 10);    // 0, 1, or -1 (legacy)
   const fbMode    = !!sessionId && typeof firebase !== 'undefined'; // Firebase available?
 
+  let bo          = parseInt(params.get('bo') || localStorage.getItem('qc_bo') || '3', 10);
+  if (![1, 3, 5].includes(bo)) bo = 3;
+  const activeIds = (params.get('maps') || localStorage.getItem('qc_active_maps') || '').split(',').filter(Boolean);
+  let activeMaps  = activeIds.length ? MAPS.filter(m => activeIds.includes(m.id)) : MAPS.slice();
+  if (!activeMaps.length) activeMaps = MAPS.slice();
+
   // ── SOUND EFFECTS ─────────────────────────────────────────────────────────────
   const SFX = (function () {
     let _ctx = null;
@@ -41,6 +47,23 @@
   // ── SEQUENCE BUILDERS ─────────────────────────────────────────────────────────
   function buildMapSeq(sp) {
     const op = 1 - sp;
+    if (bo === 1) return [
+      { player: sp, action: 'ban'  },
+      { player: op, action: 'ban'  },
+      { player: sp, action: 'pick', isDecider: true },
+    ];
+    if (bo === 5) return [
+      { player: sp, action: 'ban'  },
+      { player: op, action: 'ban'  },
+      { player: sp, action: 'pick' },
+      { player: op, action: 'pick' },
+      { player: sp, action: 'pick' },
+      { player: op, action: 'pick' },
+      { player: sp, action: 'ban'  },
+      { player: op, action: 'ban'  },
+      { player: sp, action: 'pick', isDecider: true },
+    ];
+    // Bo3 (default)
     return [
       { player: sp, action: 'ban'  },
       { player: op, action: 'ban'  },
@@ -54,6 +77,13 @@
 
   function buildChampSeq(homePlayer) {
     const away = 1 - homePlayer;
+    if (bo === 1) return [
+      { player: homePlayer, action: 'ban'  },
+      { player: away,       action: 'ban'  },
+      { player: away,       action: 'pick' },
+      { player: homePlayer, action: 'pick' },
+    ];
+    // Bo3 + Bo5: same 3-step
     return [
       { player: homePlayer, action: 'ban'  },
       { player: away,       action: 'pick' },
@@ -68,7 +98,12 @@
   let MAP_SEQ     = buildMapSeq(startPlayer);
 
   let phase         = 'maps';
-  let mapPool       = MAPS.map(m => ({ ...m, status: 'available', actionBy: null, stepIndex: null }));
+  let mapPool       = MAPS.map(m => ({
+    ...m,
+    status:    activeMaps.some(am => am.id === m.id) ? 'available' : 'disabled',
+    actionBy:  null,
+    stepIndex: null,
+  }));
   let mapStep       = 0;
   let mapsToPlay    = [];
   let champMapIndex = 0;
@@ -105,13 +140,19 @@
     players     = [p[0] || 'Player 1', p[1] || 'Player 2'];
     startPlayer = data.startPlayer ?? 0;
     otherPlayer = 1 - startPlayer;
+    bo          = data.bo || 3;
+    const aIds  = toArr(data.activeMaps).filter(Boolean);
+    activeMaps  = aIds.length ? MAPS.filter(m => aIds.includes(m.id)) : MAPS.slice();
+    if (!activeMaps.length) activeMaps = MAPS.slice();
     MAP_SEQ     = buildMapSeq(startPlayer);
     phase       = data.phase || 'maps';
     mapStep     = data.mapStep || 0;
 
-    // Restore mapPool (12 entries, keyed by MAPS index)
+    // Restore mapPool (12 entries, keyed by MAPS index, respecting disabled)
     const rawMap = toArr(data.mapPool);
     mapPool = MAPS.map((m, i) => {
+      const isActive = activeMaps.some(am => am.id === m.id);
+      if (!isActive) return { ...m, status: 'disabled', actionBy: null, stepIndex: null };
       const r = rawMap[i];
       if (!r) return { ...m, status: 'available', actionBy: null, stepIndex: null };
       return {
@@ -166,7 +207,8 @@
 
   function getState() {
     return { players, startPlayer, phase, mapStep, mapPool,
-             champMapIndex, champStep, champPool, results, logLines, pendingBans, resultSaved };
+             champMapIndex, champStep, champPool, results, logLines, pendingBans, resultSaved,
+             bo, activeMaps: activeMaps.map(m => m.id) };
   }
 
   function writeState() {
@@ -240,10 +282,22 @@
   function computeMapsToPlay() {
     const picks   = mapPool.filter(m => m.status === 'picked').sort((a, b) => a.stepIndex - b.stepIndex);
     const decider = mapPool.find(m => m.status === 'decider');
+    if (bo === 1) return [
+      { mapName: decider?.name || '?', homePlayer: startPlayer },
+    ];
+    if (bo === 5) {
+      const slots = picks.map((p, i) => ({
+        mapName:    p.name,
+        homePlayer: p.actionBy ?? (i % 2 === 0 ? startPlayer : otherPlayer),
+      }));
+      if (decider) slots.push({ mapName: decider.name, homePlayer: startPlayer });
+      return slots;
+    }
+    // Bo3
     return [
-      { mapName: picks[0]?.name  || '?', homePlayer: picks[0]?.actionBy  ?? startPlayer },
-      { mapName: picks[1]?.name  || '?', homePlayer: picks[1]?.actionBy  ?? otherPlayer },
-      { mapName: decider?.name   || '?', homePlayer: startPlayer },
+      { mapName: picks[0]?.name || '?', homePlayer: picks[0]?.actionBy ?? startPlayer },
+      { mapName: picks[1]?.name || '?', homePlayer: picks[1]?.actionBy ?? otherPlayer },
+      { mapName: decider?.name  || '?', homePlayer: startPlayer },
     ];
   }
 
@@ -267,7 +321,7 @@
   }
 
   function startChampMap() {
-    if (champMapIndex >= 3) {
+    if (champMapIndex >= bo) {
       phase = 'done';
       flushBans();
       writeState();
@@ -277,7 +331,7 @@
     champPool = freshChampPool();
     champSeq  = buildChampSeq(mapsToPlay[champMapIndex].homePlayer);
     champStep = 0;
-    const label = champMapIndex === 2 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
+    const label = champMapIndex === bo - 1 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
     addLog('separator', t('log_champs_for', { label: label, mapName: mapsToPlay[champMapIndex].mapName }));
     writeState();
     if (!fbMode) renderAll();
@@ -375,11 +429,28 @@
     const picks      = mapPool.filter(m => m.status === 'picked').sort((a, b) => a.stepIndex - b.stepIndex);
     const deciderMap = mapPool.find(m => m.status === 'decider');
 
-    const slots = [
-      { label: t('map_1'),         map: picks[0]   || null, isDecider: false },
-      { label: t('map_2'),         map: picks[1]   || null, isDecider: false },
-      { label: t('map_3_decider'), map: deciderMap || null, isDecider: true  },
-    ];
+    container.style.gridTemplateColumns = bo === 1 ? '1fr' : bo === 5 ? 'repeat(5, 1fr)' : 'repeat(3, 1fr)';
+
+    let slots;
+    if (bo === 1) {
+      slots = [
+        { label: t('decider'), map: deciderMap || null, isDecider: true },
+      ];
+    } else if (bo === 5) {
+      slots = [
+        { label: t('map_n', { n: 1 }), map: picks[0] || null, isDecider: false },
+        { label: t('map_n', { n: 2 }), map: picks[1] || null, isDecider: false },
+        { label: t('map_n', { n: 3 }), map: picks[2] || null, isDecider: false },
+        { label: t('map_n', { n: 4 }), map: picks[3] || null, isDecider: false },
+        { label: t('decider'),          map: deciderMap || null, isDecider: true },
+      ];
+    } else {
+      slots = [
+        { label: t('map_1'),         map: picks[0]   || null, isDecider: false },
+        { label: t('map_2'),         map: picks[1]   || null, isDecider: false },
+        { label: t('map_3_decider'), map: deciderMap || null, isDecider: true  },
+      ];
+    }
 
     container.innerHTML = slots.map((slot, i) => {
       const hasMap         = slot.map !== null;
@@ -426,7 +497,7 @@
       el.textContent = t('phase_maps');
       el.className   = 'phase-indicator phase-maps';
     } else if (phase === 'champs') {
-      const label   = champMapIndex === 2 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
+      const label   = champMapIndex === bo - 1 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
       const mapName = mapsToPlay[champMapIndex]?.mapName || '';
       el.textContent = t('champions_phase', { label: label, map: mapName });
       el.className   = 'phase-indicator phase-champs';
@@ -489,6 +560,7 @@
     const myTurn = isMyTurn();
     grid.innerHTML = '';
     mapPool.forEach((map, i) => {
+      if (map.status === 'disabled') return;
       const card = document.createElement('div');
       card.className = `map-card ${map.status}`;
       if (map.actionBy !== null) card.classList.add(`p${map.actionBy + 1}`);
@@ -567,6 +639,17 @@
   }
 
   // ── RESULT SECTION ────────────────────────────────────────────────────────────
+  function renderScoreRadios() {
+    const options = bo === 1 ? ['1-0'] : bo === 5 ? ['3-0', '3-1', '3-2'] : ['2-0', '2-1'];
+    const el = document.getElementById('score-radios');
+    if (!el) return;
+    el.innerHTML = options.map(v => `
+      <label class="radio-label">
+        <input type="radio" name="score" value="${v}"> ${v}
+      </label>`).join('');
+    if (options.length === 1) el.querySelector('input').checked = true;
+  }
+
   // Separated from showResult() so it can be called again when auth state resolves.
   function updateSaveUI() {
     const saveBtn  = document.getElementById('save-btn');
@@ -592,6 +675,7 @@
     document.getElementById('winner-p1-label').textContent = players[0];
     document.getElementById('winner-p2-label').textContent = players[1];
 
+    renderScoreRadios();
     updateSaveUI();
 
     const section = document.getElementById('result-section');
@@ -676,7 +760,7 @@
       winner:  parseInt(winnerRadio.value),
       score:   scoreRadio.value,
       maps:    results.map((r, i) => ({
-        label:     i === 2 ? 'Decider' : `Map ${i + 1}`,
+        label:     i === bo - 1 ? 'Decider' : `Map ${i + 1}`,
         name:      r.mapName,
         champions: { [players[0]]: r.picks[0], [players[1]]: r.picks[1] },
       })),
@@ -685,6 +769,63 @@
     resultSaved = true;
     if (fbMode) writeState();
     window.location.href = 'ranking.html';
+  };
+
+  // ── SETTINGS MODAL (pickban.html) ────────────────────────────────────────────
+  let _settingsBo = bo;
+
+  function renderSettingsMapList() {
+    const container = document.getElementById('settings-map-list');
+    if (!container) return;
+    const activeSet = new Set(activeMaps.map(m => m.id));
+    container.innerHTML = MAPS.map(m => {
+      const checked = activeSet.has(m.id) ? 'checked' : '';
+      return `<label class="map-check-item"><input type="checkbox" value="${m.id}" ${checked}> ${m.name}</label>`;
+    }).join('');
+  }
+
+  function setActiveSettingsBo() {
+    document.querySelectorAll('#settings-modal .bo-opt').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.getAttribute('data-bo'), 10) === _settingsBo);
+    });
+  }
+
+  window.openPickbanSettings = function () {
+    _settingsBo = bo;
+    renderSettingsMapList();
+    setActiveSettingsBo();
+    const modal = document.getElementById('settings-modal');
+    if (modal) { modal.classList.add('open'); window.i18n.apply(); }
+  };
+
+  window.closePickbanSettings = function () {
+    const modal = document.getElementById('settings-modal');
+    if (modal) modal.classList.remove('open');
+  };
+
+  window.settingsToggleAll = function (checked) {
+    document.querySelectorAll('#settings-map-list input[type=checkbox]').forEach(cb => {
+      cb.checked = checked;
+    });
+  };
+
+  window.applyPickbanSettings = function () {
+    const checkedIds = Array.from(
+      document.querySelectorAll('#settings-map-list input[type=checkbox]:checked')
+    ).map(cb => cb.value);
+    localStorage.setItem('qc_active_maps', checkedIds.join(','));
+    localStorage.setItem('qc_bo', String(_settingsBo));
+    window.closePickbanSettings();
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let newSid = '';
+    for (let i = 0; i < 6; i++) newSid += chars[Math.floor(Math.random() * chars.length)];
+    const mapsParam = checkedIds.length ? '&maps=' + encodeURIComponent(checkedIds.join(',')) : '';
+    window.location.href =
+      'pickban.html?session=' + encodeURIComponent(newSid) +
+      '&player=0&p1=' + encodeURIComponent(players[0]) +
+      '&p2=' + encodeURIComponent(players[1]) +
+      '&bo=' + _settingsBo +
+      mapsParam;
   };
 
   // ── FIREBASE SESSION ──────────────────────────────────────────────────────────
@@ -711,6 +852,24 @@
 
   // ── INIT ─────────────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
+    // Update bo badge in header
+    const boEl = document.getElementById('bo-badge');
+    if (boEl) boEl.textContent = 'Bo' + bo;
+
+    // Settings modal bo-opt buttons
+    document.querySelectorAll('#settings-modal .bo-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        _settingsBo = parseInt(btn.getAttribute('data-bo'), 10);
+        setActiveSettingsBo();
+      });
+    });
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+      settingsModal.addEventListener('click', e => {
+        if (e.target === settingsModal) window.closePickbanSettings();
+      });
+    }
+
     if (!fbMode) {
       // Legacy mode (no session in URL, or Firebase not available)
       const pSpan = `<span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`;

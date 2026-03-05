@@ -11,7 +11,7 @@
 
     <header class="site-header">
       <h1>QUAKE CHAMPIONS</h1>
-      <p class="tagline">Map Pick &amp; Ban · Best of 3</p>
+      <p class="tagline">Map Pick &amp; Ban · Best of <button id="bo-btn" class="bo-toggle" onclick="window.openSettings()">3</button></p>
     </header>
 
     <main class="home-main">
@@ -39,12 +39,44 @@
       </div>
     </main>
 
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="screenshots-modal">
+      <div class="settings-inner">
+        <div class="screenshots-header">
+          <span class="screenshots-title" data-i18n="settings">CONFIGURACIÓN</span>
+          <button class="changelog-close" onclick="window.closeSettings()">✕</button>
+        </div>
+        <div class="settings-body">
+          <div class="settings-group">
+            <div class="settings-label" data-i18n="format">FORMATO</div>
+            <div class="bo-options">
+              <button class="bo-opt" data-bo="1">Bo1</button>
+              <button class="bo-opt active" data-bo="3">Bo3</button>
+              <button class="bo-opt" data-bo="5">Bo5</button>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-label-row">
+              <span class="settings-label" data-i18n="map_pool">MAPAS ACTIVOS</span>
+              <div class="map-toggle-btns">
+                <button class="btn-maps-all" onclick="window.settingsToggleAll(true)" data-i18n="select_all">TODOS</button>
+                <button class="btn-maps-all" onclick="window.settingsToggleAll(false)" data-i18n="deselect_all">NINGUNO</button>
+              </div>
+            </div>
+            <div id="settings-map-list" class="settings-map-list"></div>
+          </div>
+          <button class="btn btn-primary settings-apply" onclick="window.applySettings()" data-i18n="apply_settings">APLICAR</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/version.js"></script>
   <script>
     function genSessionId() {
@@ -65,11 +97,89 @@
         return;
       }
       err.style.display = 'none';
-      const sid = genSessionId();
+      const sid  = genSessionId();
+      const bo   = localStorage.getItem('qc_bo') || '3';
+      const maps = localStorage.getItem('qc_active_maps') || '';
       window.location.href =
         'pickban.html?session=' + encodeURIComponent(sid) +
-        '&player=0&p1=' + encodeURIComponent(p1) + '&p2=' + encodeURIComponent(p2);
+        '&player=0&p1=' + encodeURIComponent(p1) + '&p2=' + encodeURIComponent(p2) +
+        '&bo=' + bo +
+        (maps ? '&maps=' + encodeURIComponent(maps) : '');
     });
+
+    // ── SETTINGS MODAL ──────────────────────────────────────────────────────
+    (function () {
+      var _bo = 3;
+
+      function updateBoBadge() {
+        var btn = document.getElementById('bo-btn');
+        if (btn) btn.textContent = _bo;
+      }
+
+      function renderMapList() {
+        var container = document.getElementById('settings-map-list');
+        if (!container) return;
+        var savedIds = localStorage.getItem('qc_active_maps');
+        var activeSet = savedIds ? new Set(savedIds.split(',').filter(Boolean)) : null;
+        container.innerHTML = MAPS.map(function (m) {
+          var checked = (!activeSet || activeSet.has(m.id)) ? 'checked' : '';
+          return '<label class="map-check-item"><input type="checkbox" value="' + m.id + '" ' + checked + '> ' + m.name + '</label>';
+        }).join('');
+      }
+
+      function setActiveBoBtn() {
+        document.querySelectorAll('.bo-opt').forEach(function (btn) {
+          btn.classList.toggle('active', parseInt(btn.getAttribute('data-bo'), 10) === _bo);
+        });
+      }
+
+      window.openSettings = function () {
+        renderMapList();
+        setActiveBoBtn();
+        var modal = document.getElementById('settings-modal');
+        if (modal) { modal.classList.add('open'); window.i18n.apply(); }
+      };
+
+      window.closeSettings = function () {
+        var modal = document.getElementById('settings-modal');
+        if (modal) modal.classList.remove('open');
+      };
+
+      window.settingsToggleAll = function (checked) {
+        document.querySelectorAll('#settings-map-list input[type=checkbox]').forEach(function (cb) {
+          cb.checked = checked;
+        });
+      };
+
+      window.applySettings = function () {
+        var checkedIds = Array.from(
+          document.querySelectorAll('#settings-map-list input[type=checkbox]:checked')
+        ).map(function (cb) { return cb.value; });
+        localStorage.setItem('qc_active_maps', checkedIds.join(','));
+        localStorage.setItem('qc_bo', String(_bo));
+        updateBoBadge();
+        window.closeSettings();
+      };
+
+      document.addEventListener('DOMContentLoaded', function () {
+        _bo = parseInt(localStorage.getItem('qc_bo') || '3', 10);
+        updateBoBadge();
+
+        document.querySelectorAll('.bo-opt').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            _bo = parseInt(btn.getAttribute('data-bo'), 10);
+            setActiveBoBtn();
+          });
+        });
+
+        var modal = document.getElementById('settings-modal');
+        if (modal) {
+          modal.addEventListener('click', function (e) {
+            if (e.target === modal) window.closeSettings();
+          });
+        }
+      });
+    })();
 
     // Auth-aware section at the bottom
     firebase.auth().onAuthStateChanged(function (user) {

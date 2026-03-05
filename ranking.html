@@ -13,6 +13,7 @@
       <a href="index.html" class="back-link" data-i18n="back_home">← INICIO</a>
       <h1 data-i18n="ranking">RANKING</h1>
       <div style="display:flex;align-items:center;gap:0.5rem">
+        <button id="match-counter" class="match-counter-badge" onclick="window.openMatchStats()" data-i18n-title="matches_played">—</button>
         <div id="admin-actions" style="display:none">
           <button onclick="clearData()" class="btn-danger-sm" data-i18n="clear_all">BORRAR TODO</button>
         </div>
@@ -62,6 +63,17 @@
       </section>
 
     </main>
+  </div>
+
+  <!-- Match stats modal -->
+  <div id="stats-modal" class="screenshots-modal">
+    <div class="stats-inner">
+      <div class="screenshots-header">
+        <span class="screenshots-title" data-i18n="matches_played">PARTIDAS JUGADAS</span>
+        <button class="changelog-close" onclick="window.closeMatchStats()">✕</button>
+      </div>
+      <div id="stats-body" class="stats-body"></div>
+    </div>
   </div>
 
   <!-- Screenshots modal -->
@@ -125,8 +137,14 @@
     document.getElementById('screenshots-modal').addEventListener('click', function (e) {
       if (e.target === this) window.closeScreenshots();
     });
+    document.getElementById('stats-modal').addEventListener('click', function (e) {
+      if (e.target === this) window.closeMatchStats();
+    });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') window.closeScreenshots();
+      if (e.key === 'Escape') {
+        window.closeScreenshots();
+        window.closeMatchStats();
+      }
     });
   </script>
 </body>

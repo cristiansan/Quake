@@ -19,7 +19,7 @@
       </div>
       <div class="header-right">
         <button id="share-btn" class="btn-share" onclick="copyShareLink()" style="display:none">🔗 P2</button>
-        <span class="bo3-badge">Bo3</span>
+        <button type="button" id="bo-badge" class="bo3-badge" onclick="window.openPickbanSettings()">Bo3</button>
       </div>
     </header>
 
@@ -71,14 +71,7 @@
             </label>
           </div>
 
-          <div class="score-select">
-            <label class="radio-label">
-              <input type="radio" name="score" value="2-0"> 2-0
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="score" value="2-1"> 2-1
-            </label>
-          </div>
+          <div class="score-select" id="score-radios"></div>
 
           <button id="copy-btn" onclick="copyResult()" class="btn btn-copy" data-i18n="copy_result">COPY RESULT STRING</button>
           <button id="save-btn" onclick="saveResult()" class="btn btn-primary" data-i18n="save_ranking">GUARDAR Y VER RANKING</button>
@@ -95,6 +88,37 @@
   </div>
 
   <!-- Firebase SDK (compat) — required for multiplayer + auth -->
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="screenshots-modal">
+    <div class="settings-inner">
+      <div class="screenshots-header">
+        <span class="screenshots-title" data-i18n="settings">CONFIGURACIÓN</span>
+        <button class="changelog-close" onclick="window.closePickbanSettings()">✕</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-group">
+          <div class="settings-label" data-i18n="format">FORMATO</div>
+          <div class="bo-options">
+            <button class="bo-opt" data-bo="1">Bo1</button>
+            <button class="bo-opt active" data-bo="3">Bo3</button>
+            <button class="bo-opt" data-bo="5">Bo5</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-label-row">
+            <span class="settings-label" data-i18n="map_pool">MAPAS ACTIVOS</span>
+            <div class="map-toggle-btns">
+              <button class="btn-maps-all" onclick="window.settingsToggleAll(true)" data-i18n="select_all">TODOS</button>
+              <button class="btn-maps-all" onclick="window.settingsToggleAll(false)" data-i18n="deselect_all">NINGUNO</button>
+            </div>
+          </div>
+          <div id="settings-map-list" class="settings-map-list"></div>
+        </div>
+        <button class="btn btn-primary settings-apply" onclick="window.applyPickbanSettings()" data-i18n="apply_settings">APLICAR</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>

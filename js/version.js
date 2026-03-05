@@ -1,7 +1,16 @@
 (function () {
-  const VERSION = 'v0.7';
+  const VERSION = 'v0.8';
 
   const CHANGELOG = [
+    {
+      version: 'v0.8',
+      changes: [
+        'Selector de formato (Bo1/Bo3/Bo5) y pool de mapas configurable desde index',
+        'Badge Bo3/Bo1/Bo5 en pickban clickeable: abre el mismo modal para ajustar formato y mapas en cualquier momento',
+        'Reinicia la partida con los mismos jugadores al aplicar cambios desde pickban',
+        'Fix: pool de mapas vacío si los IDs guardados no coincidían con MAPS',
+      ],
+    },
     {
       version: 'v0.7',
       changes: [

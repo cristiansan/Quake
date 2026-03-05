@@ -91,6 +91,55 @@
     }).join('');
   }
 
+  // ── MATCH COUNTER + STATS MODAL ──────────────────────────────────────────────
+  function updateCounter(matches) {
+    const el = document.getElementById('match-counter');
+    if (el) el.textContent = matches.length;
+  }
+
+  function renderMatchStats(matches) {
+    const locale = window.i18n ? window.i18n.locale() : 'es-AR';
+    const groups = {};
+    matches.forEach(m => {
+      const d   = new Date(m.date);
+      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      if (!groups[key]) groups[key] = { date: d, list: [] };
+      groups[key].list.push(m);
+    });
+
+    const sorted  = Object.keys(groups).sort().reverse();
+    const bodyEl  = document.getElementById('stats-body');
+    if (!bodyEl) return;
+
+    if (!sorted.length) {
+      bodyEl.innerHTML = `<p class="empty" style="padding:1.5rem;text-align:center">${t('no_matches_recorded')}</p>`;
+      return;
+    }
+
+    const monthFmt = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
+    bodyEl.innerHTML = sorted.map(key => {
+      const g          = groups[key];
+      const monthLabel = monthFmt.format(g.date).toUpperCase();
+      const pairs      = g.list.map(m =>
+        `<li>${m.players[0]} <span class="vs-sm">vs</span> ${m.players[1]}</li>`
+      ).join('');
+      return `<div class="stats-month">
+        <div class="stats-month-hdr">
+          <span class="stats-month-name">${monthLabel}</span>
+          <span class="stats-month-count">${t('n_matches', { n: g.list.length })}</span>
+        </div>
+        <ul class="stats-player-list">${pairs}</ul>
+      </div>`;
+    }).join('');
+  }
+
+  window.openMatchStats  = function () {
+    document.getElementById('stats-modal').classList.add('open');
+  };
+  window.closeMatchStats = function () {
+    document.getElementById('stats-modal').classList.remove('open');
+  };
+
   // ── ADMIN: CLEAR DATA ─────────────────────────────────────────────────────────
   window.clearData = function () {
     if (!confirm(t('confirm_clear'))) return;
@@ -132,17 +181,23 @@
           const matches = fbMatches.length ? fbMatches : getMatches();
           renderStandings(matches);
           renderHistory(matches);
+          updateCounter(matches);
+          renderMatchStats(matches);
         })
         .catch(function (err) {
           console.error('Error leyendo ranking de Firebase:', err);
           const matches = getMatches();
           renderStandings(matches);
           renderHistory(matches);
+          updateCounter(matches);
+          renderMatchStats(matches);
         });
     } else {
       const matches = getMatches();
       renderStandings(matches);
       renderHistory(matches);
+      updateCounter(matches);
+      renderMatchStats(matches);
     }
   }
 
