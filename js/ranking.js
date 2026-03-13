@@ -52,7 +52,7 @@
       return;
     }
 
-    // Build screenshots map for the modal
+    // Build screenshots + matches maps for the modal
     if (window._screenshotsMap) {
       matches.forEach(m => {
         if (m.screenshots && m.screenshots.length) {
@@ -62,6 +62,8 @@
         }
       });
     }
+    window._matchesMap = window._matchesMap || {};
+    matches.forEach(m => { window._matchesMap[m.id] = m; });
 
     tbody.innerHTML = matches.map(m => {
       const winner = m.players[m.winner];
@@ -82,9 +84,13 @@
         ? `<button class="btn-photos" onclick="window.openScreenshots('${m.id}')">📷 ${screenshotCount}</button>`
         : '';
 
+      const editBtn = window._isAdmin
+        ? `<button class="btn-edit" onclick="window.openEditMatch('${m.id}')">✏️</button>`
+        : '';
+
       return `<tr>
         <td class="date">${formatDate(m.date)}</td>
-        <td class="match"><span class="winner-name">${winner}</span> <span class="vs-sm">vs</span> ${loser}${photosBtn}</td>
+        <td class="match"><span class="winner-name">${winner}</span> <span class="vs-sm">vs</span> ${loser}${photosBtn}${editBtn}</td>
         <td class="score">${m.score}</td>
         <td class="maps-cell">${mapsStr}</td>
       </tr>`;
@@ -161,6 +167,69 @@
     }
   };
 
+  // ── ADMIN: EDIT MATCH ─────────────────────────────────────────────────────────
+  window._isAdmin   = false;
+  window._matchesMap = {};
+
+  window.openEditMatch = function (matchId) {
+    const m = window._matchesMap[matchId];
+    if (!m) return;
+    window._editMatchId = matchId;
+
+    const modal = document.getElementById('edit-match-modal');
+    document.getElementById('edit-p0-label').textContent = m.players[0];
+    document.getElementById('edit-p1-label').textContent = m.players[1];
+    document.getElementById('edit-winner-0').checked = (m.winner === 0);
+    document.getElementById('edit-winner-1').checked = (m.winner === 1);
+    document.getElementById('edit-score').value = m.score || '';
+    modal.classList.add('open');
+  };
+
+  window.closeEditMatch = function () {
+    document.getElementById('edit-match-modal').classList.remove('open');
+    window._editMatchId = null;
+  };
+
+  window.saveEditMatch = function () {
+    const matchId = window._editMatchId;
+    if (!matchId) return;
+    const m = window._matchesMap[matchId];
+    if (!m) return;
+
+    const winnerRadio = document.querySelector('input[name="edit-winner"]:checked');
+    if (!winnerRadio) { alert('Selecciona un ganador.'); return; }
+
+    const newWinner = parseInt(winnerRadio.value, 10);
+    const newScore  = document.getElementById('edit-score').value.trim();
+    if (!newScore) { alert('Ingresa el score.'); return; }
+
+    const updated = Object.assign({}, m, { winner: newWinner, score: newScore });
+
+    const fbAvailable = typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length;
+    if (fbAvailable) {
+      firebase.database().ref('matches/' + matchId).update({ winner: newWinner, score: newScore })
+        .then(function () {
+          window._matchesMap[matchId] = updated;
+          window.closeEditMatch();
+          location.reload();
+        })
+        .catch(function (err) {
+          alert(t('no_permissions') || 'Sin permisos.');
+          console.error(err);
+        });
+    } else {
+      // localStorage fallback
+      const matches = getMatches();
+      const idx = matches.findIndex(function (x) { return x.id === matchId; });
+      if (idx !== -1) {
+        matches[idx] = updated;
+        localStorage.setItem('ql_matches_v1', JSON.stringify(matches));
+      }
+      window.closeEditMatch();
+      location.reload();
+    }
+  };
+
   // ── ADMIN CHECK ───────────────────────────────────────────────────────────────
   const ADMIN_EMAIL = 'cristiansan@gmail.com';
 
@@ -209,8 +278,9 @@
       // Wait for auth state before querying Firebase.
       // Handles rules that require auth for reads, and avoids the race condition
       // where onAuthStateChanged hasn't fired yet when the read is attempted.
-      const unsubscribe = firebase.auth().onAuthStateChanged(function () {
+      const unsubscribe = firebase.auth().onAuthStateChanged(function (user) {
         unsubscribe();
+        if (user && user.email === ADMIN_EMAIL) window._isAdmin = true;
         loadAndRender();
       });
     } else {

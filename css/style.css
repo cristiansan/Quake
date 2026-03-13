@@ -1182,6 +1182,108 @@ td.maps-cell { font-size: 0.82rem; color: var(--text-dim); }
 }
 .btn-photos:hover { color: var(--text); border-color: var(--text-muted); }
 
+/* Admin edit button in ranking history */
+.btn-edit {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.73rem;
+  padding: 0.12em 0.45em;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 0.45rem;
+  vertical-align: middle;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-edit:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── EDIT MATCH MODAL ────────────────────────────────────────────────────────── */
+.edit-modal-inner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: min(400px, 95vw);
+  padding: 0;
+  overflow: hidden;
+}
+.edit-modal-body {
+  padding: 1.2rem 1.4rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.edit-field label {
+  display: block;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.edit-winner-options {
+  display: flex;
+  gap: 0.8rem;
+}
+.edit-winner-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+  letter-spacing: normal;
+}
+.edit-winner-options input[type="radio"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.edit-score-input {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'Orbitron', monospace;
+  font-size: 0.9rem;
+  padding: 0.4em 0.7em;
+  width: 7rem;
+  letter-spacing: 0.1em;
+  transition: border-color 0.2s;
+}
+.edit-score-input:focus { outline: none; border-color: var(--accent); }
+.edit-modal-actions {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: flex-end;
+}
+.btn-edit-save {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.45em 1.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-edit-save:hover { opacity: 0.85; }
+.btn-edit-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'Orbitron', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  padding: 0.45em 1.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-edit-cancel:hover { color: var(--text); border-color: var(--text-muted); }
+
 /* ── MATCH COUNTER BADGE ─────────────────────────────────────────────────────── */
 .match-counter-badge {
   background: transparent;

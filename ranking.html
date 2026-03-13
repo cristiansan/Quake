@@ -76,6 +76,33 @@
     </div>
   </div>
 
+  <!-- Edit match modal (admin only) -->
+  <div id="edit-match-modal" class="screenshots-modal">
+    <div class="edit-modal-inner">
+      <div class="screenshots-header">
+        <span class="screenshots-title">EDITAR PARTIDA</span>
+        <button class="changelog-close" onclick="window.closeEditMatch()">✕</button>
+      </div>
+      <div class="edit-modal-body">
+        <div class="edit-field">
+          <label>GANADOR</label>
+          <div class="edit-winner-options">
+            <label><input type="radio" name="edit-winner" id="edit-winner-0" value="0"> <span id="edit-p0-label">P1</span></label>
+            <label><input type="radio" name="edit-winner" id="edit-winner-1" value="1"> <span id="edit-p1-label">P2</span></label>
+          </div>
+        </div>
+        <div class="edit-field">
+          <label>SCORE</label>
+          <input type="text" id="edit-score" class="edit-score-input" placeholder="2-1" maxlength="7">
+        </div>
+        <div class="edit-modal-actions">
+          <button class="btn-edit-cancel" onclick="window.closeEditMatch()">CANCELAR</button>
+          <button class="btn-edit-save" onclick="window.saveEditMatch()">GUARDAR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Screenshots modal -->
   <div id="screenshots-modal" class="screenshots-modal">
     <div class="screenshots-inner">
@@ -110,6 +137,7 @@
         // Show admin actions if user is the admin
         if (user.email === 'cristiansan@gmail.com') {
           document.getElementById('admin-actions').style.display = 'block';
+          window._isAdmin = true;
         }
       } else {
         container.innerHTML = '<a href="login.html" class="btn-login-link">' + t('login_tab') + '</a>';
@@ -144,7 +172,12 @@
       if (e.key === 'Escape') {
         window.closeScreenshots();
         window.closeMatchStats();
+        window.closeEditMatch();
       }
+    });
+
+    document.getElementById('edit-match-modal').addEventListener('click', function (e) {
+      if (e.target === this) window.closeEditMatch();
     });
   </script>
 </body>

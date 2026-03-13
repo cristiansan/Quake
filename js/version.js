@@ -1,7 +1,15 @@
 (function () {
-  const VERSION = 'v0.8';
+  const VERSION = 'v0.9';
 
   const CHANGELOG = [
+    {
+      version: 'v0.9',
+      changes: [
+        'Admin (cristiansan): botón ✏️ en cada partida del historial para editar ganador y score',
+        'Modal de edición con selección de ganador por nombre y campo de score',
+        'Cambios se guardan directamente en Firebase y refrescan el ranking',
+      ],
+    },
     {
       version: 'v0.8',
       changes: [
