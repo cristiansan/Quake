@@ -32,6 +32,7 @@ const CHAMPIONS = [
   { id: 'solag',        name: 'Sorlag',          short: 'Sorlag',  sc: 0, sr: 7 },
   { id: 'scalebearer',  name: 'Scalebearer',     short: 'SB',      sc: 0, sr: 6 },
   { id: 'strogg',       name: 'Strogg & Peeker', short: 'Strogg',  sc: 1, sr: 4 },
+  { id: 'athena',       name: 'Athena',          short: 'Athena',  sc: 1, sr: 1 },
 ];
 
 // ── LOCALSTORAGE HELPERS ──────────────────────────────────────────────────────

@@ -828,6 +828,23 @@
       mapsParam;
   };
 
+  // ── AUTO PLAY ─────────────────────────────────────────────────────────────────
+  function autoPlay() {
+    function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function step() {
+      if (phase === 'maps') {
+        const available = mapPool.filter(m => m.status === 'available');
+        if (available.length) handleMapClick(rand(available).id);
+        setTimeout(step, 60);
+      } else if (phase === 'champs') {
+        const available = champPool.filter(c => c.status === 'available');
+        if (available.length) handleChampClick(rand(available).id);
+        setTimeout(step, 60);
+      }
+    }
+    step();
+  }
+
   // ── FIREBASE SESSION ──────────────────────────────────────────────────────────
   let _prevIsMyTurn = null;
 
@@ -875,6 +892,7 @@
       const pSpan = `<span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`;
       addLog('separator', t('log_sorteo', { playerSpan: pSpan }));
       renderAll();
+      if (params.get('auto') === '1') autoPlay();
       return;
     }
 

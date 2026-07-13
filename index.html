@@ -27,6 +27,7 @@
             <input type="text" id="p2" maxlength="24" data-i18n-placeholder="name_placeholder" placeholder="Nombre" autocomplete="off" required>
           </div>
           <button type="submit" class="btn btn-primary" data-i18n="start_pickban">INICIAR PICK &amp; BAN</button>
+          <button type="button" class="btn btn-secondary btn-auto" data-i18n="auto_pickban" onclick="startAuto()">AUTO PICK &amp; BAN</button>
           <div id="name-error" class="form-error" style="display:none" data-i18n="names_equal_error">Los nombres no pueden ser iguales.</div>
         </form>
       </div>
@@ -85,6 +86,26 @@
       for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
       return id;
     }
+
+    window.startAuto = function () {
+      const form = document.getElementById('matchForm');
+      if (!form.reportValidity()) return;
+      const p1  = document.getElementById('p1').value.trim();
+      const p2  = document.getElementById('p2').value.trim();
+      const err = document.getElementById('name-error');
+      if (p1.toLowerCase() === p2.toLowerCase()) {
+        err.style.display = 'block';
+        document.getElementById('p2').focus();
+        return;
+      }
+      err.style.display = 'none';
+      const bo   = localStorage.getItem('qc_bo') || '3';
+      const maps = localStorage.getItem('qc_active_maps') || '';
+      window.location.href =
+        'pickban.html?auto=1&p1=' + encodeURIComponent(p1) + '&p2=' + encodeURIComponent(p2) +
+        '&bo=' + bo +
+        (maps ? '&maps=' + encodeURIComponent(maps) : '');
+    };
 
     document.getElementById('matchForm').addEventListener('submit', function (e) {
       e.preventDefault();

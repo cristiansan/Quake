@@ -1,7 +1,15 @@
 (function () {
-  const VERSION = 'v0.9';
+  const VERSION = 'v1.0';
 
   const CHANGELOG = [
+    {
+      version: 'v1.0',
+      changes: [
+        'Athena agregada como champion número 16',
+        'Grilla de champions: 4 columnas × 4 filas (antes 5×4)',
+        'Nuevo botón AUTO PICK & BAN: selecciona mapas y champions al azar automáticamente',
+      ],
+    },
     {
       version: 'v0.9',
       changes: [

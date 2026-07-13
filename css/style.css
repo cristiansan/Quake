@@ -248,6 +248,17 @@ button.bo3-badge:hover {
   opacity: 1;
 }
 
+.btn-auto {
+  border-color: rgba(255, 106, 0, 0.4);
+  color: var(--accent);
+  margin-top: 0.4rem;
+}
+.btn-auto:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  opacity: 1;
+}
+
 .btn-danger-sm {
   background: transparent;
   border: 1px solid var(--banned-color);
@@ -480,7 +491,7 @@ button.bo3-badge:hover {
 /* ── CHAMPION GRID ───────────────────────────────────────────────────────────── */
 .champ-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.7rem;
   margin-bottom: 1.2rem;
 }
