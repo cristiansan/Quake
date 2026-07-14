@@ -106,7 +106,9 @@
     function renumberPlayers() {
       document.querySelectorAll('#players-list .field').forEach(function (f, i) {
         const lbl = f.querySelector('label');
-        if (lbl) lbl.textContent = 'JUGADOR ' + (i + 1);
+        if (lbl) lbl.textContent = t('player_n', { n: i + 1 });
+        const inp = f.querySelector('input');
+        if (inp) inp.placeholder = t('name_placeholder');
       });
     }
 
@@ -117,10 +119,10 @@
       div.className = 'field';
       div.innerHTML =
         '<div class="field-label-row">' +
-          '<label>JUGADOR ' + count + '</label>' +
+          '<label>' + t('player_n', { n: count }) + '</label>' +
           '<button type="button" class="btn-remove-player" onclick="removePlayer(this)">×</button>' +
         '</div>' +
-        '<input type="text" maxlength="24" placeholder="Nombre" autocomplete="off">';
+        '<input type="text" maxlength="24" placeholder="' + t('name_placeholder') + '" autocomplete="off">';
       list.appendChild(div);
       div.querySelector('input').focus();
     };
@@ -129,6 +131,15 @@
       btn.closest('.field').remove();
       renumberPlayers();
     };
+
+    // Re-translate dynamic player fields when language changes
+    (function () {
+      var _orig = window.i18n.setLang.bind(window.i18n);
+      window.i18n.setLang = function (lang) {
+        _orig(lang);
+        renumberPlayers();
+      };
+    })();
 
     function buildPParams(players) {
       return players.filter(Boolean).map(function (name, i) {
