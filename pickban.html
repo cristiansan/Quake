@@ -12,13 +12,13 @@
     <!-- HEADER -->
     <header class="site-header compact">
       <a href="index.html" class="back-link" data-i18n="back_home">← INICIO</a>
-      <div class="match-title">
-        <span id="p1-name" class="name-p1">Jugador 1</span>
+      <div id="match-title" class="match-title">
+        <span class="name-p1">Jugador 1</span>
         <span class="vs">VS</span>
-        <span id="p2-name" class="name-p2">Jugador 2</span>
+        <span class="name-p2">Jugador 2</span>
       </div>
       <div class="header-right">
-        <button id="share-btn" class="btn-share" onclick="copyShareLink()" style="display:none">🔗 P2</button>
+        <div id="share-btns"></div>
         <button type="button" id="bo-badge" class="bo3-badge" onclick="window.openPickbanSettings()">Bo3</button>
       </div>
     </header>
@@ -60,16 +60,7 @@
         <div class="save-result">
           <h3 data-i18n="register_result">REGISTRAR RESULTADO</h3>
 
-          <div class="winner-select">
-            <label class="radio-label">
-              <input type="radio" name="winner" value="0">
-              <span id="winner-p1-label">Jugador 1</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="winner" value="1">
-              <span id="winner-p2-label">Jugador 2</span>
-            </label>
-          </div>
+          <div id="winner-radios" class="winner-select"></div>
 
           <div class="score-select" id="score-radios"></div>
 

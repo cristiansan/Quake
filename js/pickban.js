@@ -1,11 +1,11 @@
 (function () {
   // ── URL PARAMS ────────────────────────────────────────────────────────────────
   const params    = new URLSearchParams(window.location.search);
-  const sessionId = params.get('session');                          // null in legacy mode
-  const myPlayer  = parseInt(params.get('player') ?? '-1', 10);    // 0, 1, or -1 (legacy)
-  const fbMode    = !!sessionId && typeof firebase !== 'undefined'; // Firebase available?
+  const sessionId = params.get('session');
+  const myPlayer  = parseInt(params.get('player') ?? '-1', 10);
+  const fbMode    = !!sessionId && typeof firebase !== 'undefined';
 
-  let bo          = parseInt(params.get('bo') || localStorage.getItem('qc_bo') || '3', 10);
+  let bo         = parseInt(params.get('bo') || localStorage.getItem('qc_bo') || '3', 10);
   if (![1, 3, 5].includes(bo)) bo = 3;
   const activeIds = (params.get('maps') || localStorage.getItem('qc_active_maps') || '').split(',').filter(Boolean);
   let activeMaps  = activeIds.length ? MAPS.filter(m => activeIds.includes(m.id)) : MAPS.slice();
@@ -44,8 +44,28 @@
     };
   })();
 
+  // ── PLAYERS ──────────────────────────────────────────────────────────────────
+  const _pArr = [];
+  for (let i = 1; ; i++) {
+    const v = params.get('p' + i);
+    if (!v) break;
+    _pArr.push(v);
+  }
+  let players    = _pArr.length >= 2 ? _pArr : ['Player 1', 'Player 2'];
+  let numPlayers = players.length;
+
   // ── SEQUENCE BUILDERS ─────────────────────────────────────────────────────────
   function buildMapSeq(sp) {
+    function P(n) { return (sp + n) % numPlayers; }
+
+    if (numPlayers >= 3) {
+      // Each player picks their own map — no bans, no decider
+      return Array.from({ length: numPlayers }, function (_, i) {
+        return { player: P(i), action: 'pick' };
+      });
+    }
+
+    // 2-player
     const op = 1 - sp;
     if (bo === 1) return [
       { player: sp, action: 'ban'  },
@@ -63,7 +83,6 @@
       { player: op, action: 'ban'  },
       { player: sp, action: 'pick', isDecider: true },
     ];
-    // Bo3 (default)
     return [
       { player: sp, action: 'ban'  },
       { player: op, action: 'ban'  },
@@ -76,6 +95,19 @@
   }
 
   function buildChampSeq(homePlayer) {
+    if (numPlayers >= 3) {
+      if (champMapIndex === 0) {
+        // Map 1: only J1 and J2 play — J3 waits
+        return [
+          { player: homePlayer,                          action: 'pick' },
+          { player: (homePlayer + 1) % numPlayers,       action: 'pick' },
+        ];
+      }
+      // Maps 2 & 3: any of the 3 could end up playing — all pick their champion
+      return Array.from({ length: numPlayers }, function (_, i) {
+        return { player: (homePlayer + i) % numPlayers, action: 'pick' };
+      });
+    }
     const away = 1 - homePlayer;
     if (bo === 1) return [
       { player: homePlayer, action: 'ban'  },
@@ -83,7 +115,6 @@
       { player: away,       action: 'pick' },
       { player: homePlayer, action: 'pick' },
     ];
-    // Bo3 + Bo5: same 3-step
     return [
       { player: homePlayer, action: 'ban'  },
       { player: away,       action: 'pick' },
@@ -92,9 +123,7 @@
   }
 
   // ── STATE ────────────────────────────────────────────────────────────────────
-  let players     = [params.get('p1') || 'Player 1', params.get('p2') || 'Player 2'];
-  let startPlayer = Math.floor(Math.random() * 2);  // may be overwritten by Firebase
-  let otherPlayer = 1 - startPlayer;
+  let startPlayer = Math.floor(Math.random() * numPlayers);
   let MAP_SEQ     = buildMapSeq(startPlayer);
 
   let phase         = 'maps';
@@ -116,8 +145,6 @@
   let resultSaved   = false;
 
   // ── FIREBASE HELPERS ──────────────────────────────────────────────────────────
-  // Firebase converts arrays with gaps/nulls to objects keyed by numeric strings.
-  // This converts them back to a proper array.
   function toArr(val) {
     if (!val) return [];
     if (Array.isArray(val)) return val;
@@ -129,17 +156,19 @@
     return result;
   }
 
-  // Firebase drops null values from arrays. Restore picks = [p0, p1] safely.
   function fixPicks(val) {
-    if (!val) return [null, null];
-    return [(val[0] ?? null), (val[1] ?? null)];
+    const n = numPlayers;
+    if (!val) return Array(n).fill(null);
+    const arr = Array(n).fill(null);
+    for (let i = 0; i < n; i++) arr[i] = (val[i] !== undefined ? val[i] : null);
+    return arr;
   }
 
   function applySnapshot(data) {
     const p = toArr(data.players);
-    players     = [p[0] || 'Player 1', p[1] || 'Player 2'];
+    players     = p.map((name, i) => name || 'Player ' + (i + 1));
+    numPlayers  = players.length;
     startPlayer = data.startPlayer ?? 0;
-    otherPlayer = 1 - startPlayer;
     bo          = data.bo || 3;
     const aIds  = toArr(data.activeMaps).filter(Boolean);
     activeMaps  = aIds.length ? MAPS.filter(m => aIds.includes(m.id)) : MAPS.slice();
@@ -148,7 +177,6 @@
     phase       = data.phase || 'maps';
     mapStep     = data.mapStep || 0;
 
-    // Restore mapPool (12 entries, keyed by MAPS index, respecting disabled)
     const rawMap = toArr(data.mapPool);
     mapPool = MAPS.map((m, i) => {
       const isActive = activeMaps.some(am => am.id === m.id);
@@ -168,7 +196,6 @@
     champMapIndex = data.champMapIndex || 0;
     champStep     = data.champStep     || 0;
 
-    // Restore champPool (variable-length, matched by champion id)
     const rawChamp = toArr(data.champPool);
     champPool = rawChamp.map(c => {
       if (!c) return null;
@@ -182,7 +209,6 @@
       };
     }).filter(Boolean);
 
-    // Restore results
     const rawRes = toArr(data.results);
     results = rawRes.map(r => {
       if (!r) return null;
@@ -198,7 +224,6 @@
     pendingBans = toArr(data.pendingBans);
     resultSaved = data.resultSaved || false;
 
-    // Recompute derived state
     mapsToPlay = computeMapsToPlay();
     if (phase === 'champs' && mapsToPlay[champMapIndex]) {
       champSeq = buildChampSeq(mapsToPlay[champMapIndex].homePlayer);
@@ -217,15 +242,12 @@
   }
 
   // ── SPRITE HELPERS ───────────────────────────────────────────────────────────
-  // Sprite dimensions (from PNG headers)
-  const MAP_CELL_W = 676 / 3;   // ≈ 225.33 px per cell
-  const MAP_CELL_H = 457 / 7;   // ≈ 65.28 px per cell
-  const CHM_CELL_W = 453 / 2;   // = 226.5 px per cell
-  const CHM_CELL_H = 525 / 8;   // = 65.625 px per cell
-  // Icon circle center from cell top-left (icon ≈ 52px, left-pad ≈ 7px → center = 33)
+  const MAP_CELL_W = 676 / 3;
+  const MAP_CELL_H = 457 / 7;
+  const CHM_CELL_W = 453 / 2;
+  const CHM_CELL_H = 525 / 8;
   const ICON_CTR = 33;
 
-  // Returns background-position string to center the icon in a displaySize×displaySize div
   function mapBp(mapIndex, displaySize) {
     const pad = ICON_CTR - displaySize / 2;
     const c = mapIndex % 3, r = Math.floor(mapIndex / 3);
@@ -261,7 +283,6 @@
     }
   }
 
-  // Returns an HTML span for a player with their color class
   function playerSpan(p) {
     return `<span class="log-p${p + 1}">${players[p]}</span>`;
   }
@@ -270,9 +291,10 @@
   function freshChampPool() {
     const usedNames = new Set();
     for (let i = 0; i < champMapIndex; i++) {
-      if (results[i]?.picks[0]) usedNames.add(results[i].picks[0]);
-      if (results[i]?.picks[1]) usedNames.add(results[i].picks[1]);
-      (results[i]?.bans || []).forEach(name => usedNames.add(name));
+      const r = results[i];
+      if (!r) continue;
+      if (r.picks) r.picks.forEach(name => { if (name) usedNames.add(name); });
+      (r.bans || []).forEach(name => usedNames.add(name));
     }
     return CHAMPIONS
       .filter(c => !usedNames.has(c.name))
@@ -282,6 +304,17 @@
   function computeMapsToPlay() {
     const picks   = mapPool.filter(m => m.status === 'picked').sort((a, b) => a.stepIndex - b.stepIndex);
     const decider = mapPool.find(m => m.status === 'decider');
+
+    if (numPlayers >= 3) {
+      // One map per player — homePlayer is the picker (they wait and play last on their map)
+      return picks.map(p => ({
+        mapName:    p.name,
+        homePlayer: p.actionBy ?? startPlayer,
+      }));
+    }
+
+    // 2-player
+    const otherPlayer = 1 - startPlayer;
     if (bo === 1) return [
       { mapName: decider?.name || '?', homePlayer: startPlayer },
     ];
@@ -293,7 +326,6 @@
       if (decider) slots.push({ mapName: decider.name, homePlayer: startPlayer });
       return slots;
     }
-    // Bo3
     return [
       { mapName: picks[0]?.name || '?', homePlayer: picks[0]?.actionBy ?? startPlayer },
       { mapName: picks[1]?.name || '?', homePlayer: picks[1]?.actionBy ?? otherPlayer },
@@ -314,14 +346,15 @@
       mapName:    m.mapName,
       homePlayer: m.homePlayer,
       bans:       [],
-      picks:      [null, null],
+      picks:      Array(numPlayers).fill(null),
     }));
     champMapIndex = 0;
     startChampMap();
   }
 
   function startChampMap() {
-    if (champMapIndex >= bo) {
+    const totalMaps = numPlayers >= 3 ? mapsToPlay.length : bo;
+    if (champMapIndex >= totalMaps) {
       phase = 'done';
       flushBans();
       writeState();
@@ -331,7 +364,7 @@
     champPool = freshChampPool();
     champSeq  = buildChampSeq(mapsToPlay[champMapIndex].homePlayer);
     champStep = 0;
-    const label = champMapIndex === bo - 1 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
+    const label = t('map_n', { n: champMapIndex + 1 });
     addLog('separator', t('log_champs_for', { label: label, mapName: mapsToPlay[champMapIndex].mapName }));
     writeState();
     if (!fbMode) renderAll();
@@ -396,16 +429,23 @@
 
   // ── RENDER ───────────────────────────────────────────────────────────────────
   function renderAll() {
-    document.getElementById('p1-name').textContent = players[0];
-    document.getElementById('p2-name').textContent = players[1];
+    renderMatchTitle();
     renderPlayerBadge();
-    renderShareBtn();
+    renderShareBtns();
     renderTracker();
     renderPhaseIndicator();
     renderTurnBar();
     renderGrids();
     renderLog();
     if (phase === 'done') showResult();
+  }
+
+  function renderMatchTitle() {
+    const el = document.getElementById('match-title');
+    if (!el) return;
+    el.innerHTML = players.map((name, i) =>
+      `<span class="name-p${i + 1}">${name}</span>`
+    ).join('<span class="vs">VS</span>');
   }
 
   function renderPlayerBadge() {
@@ -416,12 +456,21 @@
     el.style.display = 'block';
   }
 
-  function renderShareBtn() {
+  let _shareBtnsRendered = false;
+  function renderShareBtns() {
     if (!fbMode || myPlayer !== 0) return;
-    const btn = document.getElementById('share-btn');
-    if (!btn || btn.style.display === 'inline-flex') return;
-    btn.style.display = 'inline-flex';
-    btn.textContent   = `\u21D7 LINK ${players[1].toUpperCase()}`;
+    const container = document.getElementById('share-btns');
+    if (!container || _shareBtnsRendered) return;
+    _shareBtnsRendered = true;
+    for (let i = 1; i < numPlayers; i++) {
+      const btn = document.createElement('button');
+      btn.className    = 'btn-share';
+      btn.style.display = 'inline-flex';
+      btn.textContent  = `⇗ LINK ${players[i].toUpperCase()}`;
+      const idx = i;
+      btn.onclick = function () { copyShareLink(idx); };
+      container.appendChild(btn);
+    }
   }
 
   function renderTracker() {
@@ -429,14 +478,24 @@
     const picks      = mapPool.filter(m => m.status === 'picked').sort((a, b) => a.stepIndex - b.stepIndex);
     const deciderMap = mapPool.find(m => m.status === 'decider');
 
-    container.style.gridTemplateColumns = bo === 1 ? '1fr' : bo === 5 ? 'repeat(5, 1fr)' : 'repeat(3, 1fr)';
-
     let slots;
-    if (bo === 1) {
-      slots = [
-        { label: t('decider'), map: deciderMap || null, isDecider: true },
+    if (numPlayers >= 3) {
+      // 3-player: one pick per player — show king-of-hill format label per slot
+      container.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      const P = (n) => players[(startPlayer + n) % numPlayers];
+      const formatLabels = [
+        `${P(0)} vs ${P(1)}`,
+        `Perdedor vs ${P(2)}`,
+        `Final`,
       ];
+      slots = Array.from({ length: numPlayers }, function (_, i) {
+        return { label: t('map_n', { n: i + 1 }), map: picks[i] || null, isDecider: false, formatLabel: formatLabels[i] };
+      });
+    } else if (bo === 1) {
+      container.style.gridTemplateColumns = '1fr';
+      slots = [{ label: t('decider'), map: deciderMap || null, isDecider: true }];
     } else if (bo === 5) {
+      container.style.gridTemplateColumns = 'repeat(5, 1fr)';
       slots = [
         { label: t('map_n', { n: 1 }), map: picks[0] || null, isDecider: false },
         { label: t('map_n', { n: 2 }), map: picks[1] || null, isDecider: false },
@@ -445,6 +504,7 @@
         { label: t('decider'),          map: deciderMap || null, isDecider: true },
       ];
     } else {
+      container.style.gridTemplateColumns = 'repeat(3, 1fr)';
       slots = [
         { label: t('map_1'),         map: picks[0]   || null, isDecider: false },
         { label: t('map_2'),         map: picks[1]   || null, isDecider: false },
@@ -455,26 +515,53 @@
     container.innerHTML = slots.map((slot, i) => {
       const hasMap         = slot.map !== null;
       const isCurrentChamp = phase === 'champs' && champMapIndex === i;
-      const result         = results[i] || { picks: [null, null], bans: [] };
-      const p0champ        = result.picks[0];
-      const p1champ        = result.picks[1];
+      const result         = results[i] || { picks: Array(numPlayers).fill(null), bans: [] };
       const bans           = result.bans || [];
 
       let cls = 'tracker-slot';
       if (hasMap)         cls += slot.isDecider ? ' active-decider' : ' active';
       if (isCurrentChamp) cls += ' current-champ';
 
-      const banHtml    = bans.length
-        ? `<div class="tracker-ban">${t('tracker_bans', { bans: bans.join(', ') })}</div>` : '';
-      const champsHtml = (p0champ || p1champ) ? `
-        <div class="tracker-champs">
-          <div class="tracker-champ tracker-p1">${players[0]}: <strong>${p0champ || '—'}</strong></div>
-          <div class="tracker-champ tracker-p2">${players[1]}: <strong>${p1champ || '—'}</strong></div>
-          ${banHtml}
-        </div>` : '';
+      let champsHtml = '';
+      if (numPlayers >= 3) {
+        const rPicks = (results[i] || {}).picks || [];
+        const p0 = (startPlayer + 0) % numPlayers;
+        const p1 = (startPlayer + 1) % numPlayers;
+        const p2 = (startPlayer + 2) % numPlayers;
+        const lines = [];
+        if (i === 0) {
+          // Map 1: only J1 and J2 pick
+          if (rPicks[p0] || rPicks[p1]) {
+            lines.push(`<div class="tracker-champ tracker-p${p0+1}">${players[p0]}: <strong>${rPicks[p0] || '—'}</strong></div>`);
+            lines.push(`<div class="tracker-champ tracker-p${p1+1}">${players[p1]}: <strong>${rPicks[p1] || '—'}</strong></div>`);
+          }
+        } else {
+          // Maps 2 & 3: all 3 pick — show those who have already chosen
+          [p0, p1, p2].forEach(function (pi) {
+            if (rPicks[pi]) {
+              lines.push(`<div class="tracker-champ tracker-p${pi+1}">${players[pi]}: <strong>${rPicks[pi]}</strong></div>`);
+            }
+          });
+        }
+        if (lines.length) champsHtml = `<div class="tracker-champs">${lines.join('')}</div>`;
+      } else {
+        const hasChamps = result.picks && result.picks.some(Boolean);
+        const banHtml   = bans.length
+          ? `<div class="tracker-ban">${t('tracker_bans', { bans: bans.join(', ') })}</div>` : '';
+        if (hasChamps) {
+          champsHtml = `<div class="tracker-champs">
+            ${players.map((name, pi) =>
+              `<div class="tracker-champ tracker-p${pi + 1}">${name}: <strong>${result.picks[pi] || '—'}</strong></div>`
+            ).join('')}
+            ${banHtml}
+          </div>`;
+        }
+      }
 
-      const mapIdx     = hasMap ? MAPS.findIndex(m => m.id === slot.map.id) : -1;
-      const mapBpStr   = mapIdx >= 0 ? mapBp(mapIdx, 30) : null;
+      const formatHtml  = slot.formatLabel
+        ? `<div class="tracker-format">${slot.formatLabel}</div>` : '';
+      const mapIdx      = hasMap ? MAPS.findIndex(m => m.id === slot.map.id) : -1;
+      const mapBpStr    = mapIdx >= 0 ? mapBp(mapIdx, 30) : null;
       const mapIconHtml = mapBpStr
         ? `<div class="sprite-icon sprite-icon-sm" style="background-image:url('images/maps.png');background-position:${mapBpStr}"></div>`
         : '';
@@ -486,6 +573,7 @@
             ${mapIconHtml}
             <div class="tracker-mapname">${hasMap ? slot.map.name : '—'}</div>
           </div>
+          ${formatHtml}
           ${champsHtml}
         </div>`;
     }).join('');
@@ -497,7 +585,7 @@
       el.textContent = t('phase_maps');
       el.className   = 'phase-indicator phase-maps';
     } else if (phase === 'champs') {
-      const label   = champMapIndex === bo - 1 ? t('decider') : t('map_n', { n: champMapIndex + 1 });
+      const label   = t('map_n', { n: champMapIndex + 1 });
       const mapName = mapsToPlay[champMapIndex]?.mapName || '';
       el.textContent = t('champions_phase', { label: label, map: mapName });
       el.className   = 'phase-indicator phase-champs';
@@ -640,9 +728,10 @@
 
   // ── RESULT SECTION ────────────────────────────────────────────────────────────
   function renderScoreRadios() {
-    const options = bo === 1 ? ['1-0'] : bo === 5 ? ['3-0', '3-1', '3-2'] : ['2-0', '2-1'];
     const el = document.getElementById('score-radios');
     if (!el) return;
+    if (numPlayers >= 3) { el.innerHTML = ''; return; }
+    const options = bo === 1 ? ['1-0'] : bo === 5 ? ['3-0', '3-1', '3-2'] : ['2-0', '2-1'];
     el.innerHTML = options.map(v => `
       <label class="radio-label">
         <input type="radio" name="score" value="${v}"> ${v}
@@ -650,13 +739,11 @@
     if (options.length === 1) el.querySelector('input').checked = true;
   }
 
-  // Separated from showResult() so it can be called again when auth state resolves.
   function updateSaveUI() {
     const saveBtn  = document.getElementById('save-btn');
     const savedMsg = document.getElementById('already-saved-msg');
     const anonNote = document.getElementById('anon-save-note');
 
-    // In fbMode check firebase auth; in legacy mode anyone can save locally
     const user   = fbMode && typeof firebase !== 'undefined' ? firebase.auth().currentUser : true;
     const authed = !!user;
 
@@ -672,8 +759,12 @@
   }
 
   function showResult() {
-    document.getElementById('winner-p1-label').textContent = players[0];
-    document.getElementById('winner-p2-label').textContent = players[1];
+    const radios = document.getElementById('winner-radios');
+    if (radios) {
+      radios.innerHTML = players.map((name, i) =>
+        `<label class="radio-label"><input type="radio" name="winner" value="${i}"> ${name}</label>`
+      ).join('');
+    }
 
     renderScoreRadios();
     updateSaveUI();
@@ -690,11 +781,12 @@
     const mapShort   = name => (MAPS.find(m => m.name === name)?.short)      || name;
     const champShort = name => (CHAMPIONS.find(c => c.name === name)?.short) || name || '?';
 
-    const maps = results.map(r =>
-      `[${mapShort(r.mapName)}]: ${champShort(r.picks[0])}/${champShort(r.picks[1])}`
-    ).join(', ');
+    const maps = results.map(r => {
+      const champStr = players.map((_, pi) => champShort(r.picks[pi])).join('/');
+      return `[${mapShort(r.mapName)}]: ${champStr}`;
+    }).join(', ');
 
-    return `[${players[0]} - ${players[1]}] ${maps}`;
+    return `[${players.join(' - ')}] ${maps}`;
   }
 
   window.copyResult = function () {
@@ -717,16 +809,17 @@
   };
 
   // ── COPY SHARE LINK ───────────────────────────────────────────────────────────
-  window.copyShareLink = function () {
-    const url = `${window.location.origin}${window.location.pathname}?session=${sessionId}&player=1`;
-    const btn = document.getElementById('share-btn');
-    const origText = btn ? btn.textContent : '';
+  window.copyShareLink = function (playerIdx) {
+    playerIdx = playerIdx || 1;
+    const url = `${window.location.origin}${window.location.pathname}?session=${sessionId}&player=${playerIdx}`;
+    const container = document.getElementById('share-btns');
+    const btn = container ? container.children[playerIdx - 1] : null;
 
     const finish = () => {
-      if (btn) {
-        btn.textContent = t('copied');
-        setTimeout(() => { btn.textContent = origText; }, 2000);
-      }
+      if (!btn) return;
+      const orig = btn.textContent;
+      btn.textContent = t('copied');
+      setTimeout(() => { btn.textContent = orig; }, 2000);
     };
 
     if (navigator.clipboard) {
@@ -745,24 +838,27 @@
     document.body.removeChild(ta);
   }
 
-  // ── SAVE (exposed for onclick) ────────────────────────────────────────────────
+  // ── SAVE ─────────────────────────────────────────────────────────────────────
   window.saveResult = function () {
     if (resultSaved) return;
     const winnerRadio = document.querySelector('input[name="winner"]:checked');
     const scoreRadio  = document.querySelector('input[name="score"]:checked');
     if (!winnerRadio) { alert(t('select_winner')); return; }
-    if (!scoreRadio)  { alert(t('select_score'));  return; }
+    if (numPlayers < 3 && !scoreRadio) { alert(t('select_score')); return; }
 
     const match = {
       id:      Date.now(),
       date:    new Date().toISOString(),
       players: [...players],
       winner:  parseInt(winnerRadio.value),
-      score:   scoreRadio.value,
+      score:   scoreRadio ? scoreRadio.value : (numPlayers + '-player'),
       maps:    results.map((r, i) => ({
-        label:     i === bo - 1 ? 'Decider' : `Map ${i + 1}`,
+        label:     `Map ${i + 1}`,
         name:      r.mapName,
-        champions: { [players[0]]: r.picks[0], [players[1]]: r.picks[1] },
+        champions: players.reduce((obj, name, pi) => {
+          obj[name] = r.picks[pi];
+          return obj;
+        }, {}),
       })),
     };
     saveMatch(match);
@@ -771,7 +867,7 @@
     window.location.href = 'ranking.html';
   };
 
-  // ── SETTINGS MODAL (pickban.html) ────────────────────────────────────────────
+  // ── SETTINGS MODAL ────────────────────────────────────────────────────────────
   let _settingsBo = bo;
 
   function renderSettingsMapList() {
@@ -820,10 +916,10 @@
     let newSid = '';
     for (let i = 0; i < 6; i++) newSid += chars[Math.floor(Math.random() * chars.length)];
     const mapsParam = checkedIds.length ? '&maps=' + encodeURIComponent(checkedIds.join(',')) : '';
+    const pParams   = players.map((name, i) => 'p' + (i + 1) + '=' + encodeURIComponent(name)).join('&');
     window.location.href =
       'pickban.html?session=' + encodeURIComponent(newSid) +
-      '&player=0&p1=' + encodeURIComponent(players[0]) +
-      '&p2=' + encodeURIComponent(players[1]) +
+      '&player=0&' + pParams +
       '&bo=' + _settingsBo +
       mapsParam;
   };
@@ -869,11 +965,9 @@
 
   // ── INIT ─────────────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
-    // Update bo badge in header
     const boEl = document.getElementById('bo-badge');
     if (boEl) boEl.textContent = 'Bo' + bo;
 
-    // Settings modal bo-opt buttons
     document.querySelectorAll('#settings-modal .bo-opt').forEach(btn => {
       btn.addEventListener('click', () => {
         _settingsBo = parseInt(btn.getAttribute('data-bo'), 10);
@@ -888,7 +982,6 @@
     }
 
     if (!fbMode) {
-      // Legacy mode (no session in URL, or Firebase not available)
       const pSpan = `<span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`;
       addLog('separator', t('log_sorteo', { playerSpan: pSpan }));
       renderAll();
@@ -896,18 +989,13 @@
       return;
     }
 
-    // Firebase mode
     window._fbDb = firebase.database();
 
-    // When auth state resolves (may happen after the first render), re-evaluate
-    // the save button visibility. Fixes the race condition where currentUser is
-    // null on the first render even though the user is logged in.
     firebase.auth().onAuthStateChanged(function () {
       if (phase === 'done') updateSaveUI();
     });
 
     if (myPlayer === 0) {
-      // Player 1: initialize session if it doesn't exist yet, then subscribe
       window._fbDb.ref('sessions/' + sessionId).once('value').then(snap => {
         if (!snap.exists()) {
           const pSpan = `<span class="log-p${startPlayer + 1}"><strong>${players[startPlayer]}</strong></span>`;
@@ -917,7 +1005,7 @@
         subscribeToSession();
       });
     } else {
-      // Player 2: just subscribe (reads everything from Firebase)
+      // Players 2, 3, etc.: subscribe and get all state from Firebase
       subscribeToSession();
     }
   });

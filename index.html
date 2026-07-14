@@ -18,13 +18,18 @@
       <div class="card form-card">
         <h2 data-i18n="new_match">NUEVA PARTIDA</h2>
         <form id="matchForm">
-          <div class="field">
-            <label for="p1" data-i18n="player_1">JUGADOR 1</label>
-            <input type="text" id="p1" maxlength="24" data-i18n-placeholder="name_placeholder" placeholder="Nombre" autocomplete="off" required>
+          <div id="players-list">
+            <div class="field">
+              <label for="p1" data-i18n="player_1">JUGADOR 1</label>
+              <input type="text" id="p1" maxlength="24" data-i18n-placeholder="name_placeholder" placeholder="Nombre" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="p2" data-i18n="player_2">JUGADOR 2</label>
+              <input type="text" id="p2" maxlength="24" data-i18n-placeholder="name_placeholder" placeholder="Nombre" autocomplete="off" required>
+            </div>
           </div>
-          <div class="field">
-            <label for="p2" data-i18n="player_2">JUGADOR 2</label>
-            <input type="text" id="p2" maxlength="24" data-i18n-placeholder="name_placeholder" placeholder="Nombre" autocomplete="off" required>
+          <div class="add-player-wrap">
+            <button type="button" id="add-player-btn" class="btn-add-player" onclick="addPlayer()">+</button>
           </div>
           <button type="submit" class="btn btn-primary" data-i18n="start_pickban">INICIAR PICK &amp; BAN</button>
           <button type="button" class="btn btn-secondary btn-auto" data-i18n="auto_pickban" onclick="startAuto()">AUTO PICK &amp; BAN</button>
@@ -87,34 +92,74 @@
       return id;
     }
 
+    // ── DYNAMIC PLAYERS ─────────────────────────────────────────────────────────
+    function getPlayers() {
+      return Array.from(document.querySelectorAll('#players-list input'))
+        .map(function (inp) { return inp.value.trim(); });
+    }
+
+    function hasDuplicates(names) {
+      const filled = names.filter(Boolean).map(function (n) { return n.toLowerCase(); });
+      return filled.length !== new Set(filled).size;
+    }
+
+    function renumberPlayers() {
+      document.querySelectorAll('#players-list .field').forEach(function (f, i) {
+        const lbl = f.querySelector('label');
+        if (lbl) lbl.textContent = 'JUGADOR ' + (i + 1);
+      });
+    }
+
+    window.addPlayer = function () {
+      const list  = document.getElementById('players-list');
+      const count = list.querySelectorAll('.field').length + 1;
+      const div   = document.createElement('div');
+      div.className = 'field';
+      div.innerHTML =
+        '<div class="field-label-row">' +
+          '<label>JUGADOR ' + count + '</label>' +
+          '<button type="button" class="btn-remove-player" onclick="removePlayer(this)">×</button>' +
+        '</div>' +
+        '<input type="text" maxlength="24" placeholder="Nombre" autocomplete="off">';
+      list.appendChild(div);
+      div.querySelector('input').focus();
+    };
+
+    window.removePlayer = function (btn) {
+      btn.closest('.field').remove();
+      renumberPlayers();
+    };
+
+    function buildPParams(players) {
+      return players.filter(Boolean).map(function (name, i) {
+        return 'p' + (i + 1) + '=' + encodeURIComponent(name);
+      }).join('&');
+    }
+
     window.startAuto = function () {
       const form = document.getElementById('matchForm');
       if (!form.reportValidity()) return;
-      const p1  = document.getElementById('p1').value.trim();
-      const p2  = document.getElementById('p2').value.trim();
+      const players = getPlayers();
       const err = document.getElementById('name-error');
-      if (p1.toLowerCase() === p2.toLowerCase()) {
+      if (hasDuplicates(players)) {
         err.style.display = 'block';
-        document.getElementById('p2').focus();
         return;
       }
       err.style.display = 'none';
       const bo   = localStorage.getItem('qc_bo') || '3';
       const maps = localStorage.getItem('qc_active_maps') || '';
       window.location.href =
-        'pickban.html?auto=1&p1=' + encodeURIComponent(p1) + '&p2=' + encodeURIComponent(p2) +
+        'pickban.html?auto=1&' + buildPParams(players) +
         '&bo=' + bo +
         (maps ? '&maps=' + encodeURIComponent(maps) : '');
     };
 
     document.getElementById('matchForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      const p1  = document.getElementById('p1').value.trim();
-      const p2  = document.getElementById('p2').value.trim();
+      const players = getPlayers();
       const err = document.getElementById('name-error');
-      if (p1.toLowerCase() === p2.toLowerCase()) {
+      if (hasDuplicates(players)) {
         err.style.display = 'block';
-        document.getElementById('p2').focus();
         return;
       }
       err.style.display = 'none';
@@ -123,7 +168,7 @@
       const maps = localStorage.getItem('qc_active_maps') || '';
       window.location.href =
         'pickban.html?session=' + encodeURIComponent(sid) +
-        '&player=0&p1=' + encodeURIComponent(p1) + '&p2=' + encodeURIComponent(p2) +
+        '&player=0&' + buildPParams(players) +
         '&bo=' + bo +
         (maps ? '&maps=' + encodeURIComponent(maps) : '');
     });

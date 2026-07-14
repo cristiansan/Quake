@@ -26,6 +26,10 @@
   --p2-bg:         rgba(255, 106, 0, 0.07);
   --p2-border:     rgba(255, 106, 0, 0.4);
 
+  --p3:            #a855f7;
+  --p3-bg:         rgba(168, 85, 247, 0.07);
+  --p3-border:     rgba(168, 85, 247, 0.4);
+
   /* Map states */
   --banned-bg:     rgba(160, 0, 0, 0.18);
   --banned-color:  #cc3333;
@@ -123,6 +127,7 @@ body {
 
 .name-p1 { color: var(--p1); }
 .name-p2 { color: var(--p2); }
+.name-p3 { color: var(--p3); }
 .vs {
   color: var(--text-muted);
   font-size: 0.7rem;
@@ -202,6 +207,53 @@ button.bo3-badge:hover {
   transition: border-color 0.2s;
 }
 .field input:focus { border-color: var(--accent); }
+
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.field-label-row label { margin-bottom: 0; }
+
+.btn-remove-player {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+  transition: color 0.15s;
+}
+.btn-remove-player:hover { color: var(--banned-color); }
+
+.add-player-wrap {
+  display: flex;
+  justify-content: center;
+  margin: -0.2rem 0 1.1rem;
+}
+
+.btn-add-player {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-add-player:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 .form-error {
   font-size: 0.8rem;
@@ -343,7 +395,9 @@ button.bo3-badge:hover {
 .tracker-champ { font-size: 0.82rem; font-weight: 500; }
 .tracker-p1    { color: var(--p1); }
 .tracker-p2    { color: var(--p2); }
-.tracker-ban   { font-size: 0.74rem; color: var(--banned-color); font-style: italic; margin-top: 0.15rem; }
+.tracker-p3    { color: var(--p3); }
+.tracker-ban    { font-size: 0.74rem; color: var(--banned-color); font-style: italic; margin-top: 0.15rem; }
+.tracker-format { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.04em; margin-top: 0.2rem; }
 
 /* ── PHASE INDICATOR ─────────────────────────────────────────────────────────── */
 .phase-indicator {
@@ -375,6 +429,7 @@ button.bo3-badge:hover {
 
 .turn-bar.player1 { border-color: var(--p1-border); }
 .turn-bar.player2 { border-color: var(--p2-border); }
+.turn-bar.player3 { border-color: var(--p3-border); }
 .turn-bar.complete { border-color: var(--decider-border); }
 
 #turn-text {
@@ -386,6 +441,7 @@ button.bo3-badge:hover {
 
 .turn-bar.player1 #turn-text { color: var(--p1); }
 .turn-bar.player2 #turn-text { color: var(--p2); }
+.turn-bar.player3 #turn-text { color: var(--p3); }
 .turn-bar.complete #turn-text { color: var(--decider-color); }
 
 .step-counter {
@@ -450,6 +506,11 @@ button.bo3-badge:hover {
   border-color: var(--p2-border);
   background: var(--p2-bg);
 }
+.turn-bar.player3 ~ .map-grid   .map-card.available.clickable:hover,
+.turn-bar.player3 ~ .champ-grid .map-card.available.clickable:hover {
+  border-color: var(--p3-border);
+  background: var(--p3-bg);
+}
 
 /* Banned */
 .map-card.banned {
@@ -464,6 +525,7 @@ button.bo3-badge:hover {
 
 /* Picked P2 */
 .map-card.picked.p2 { background: var(--p2-bg); border-color: var(--p2-border); }
+.map-card.picked.p3 { background: var(--p3-bg); border-color: var(--p3-border); }
 
 /* Decider */
 .map-card.decider { background: var(--decider-bg); border-color: var(--decider-border); }
@@ -486,6 +548,7 @@ button.bo3-badge:hover {
 .map-card.banned  .map-card-badge { color: var(--banned-color); }
 .map-card.picked.p1 .map-card-badge { color: var(--p1); }
 .map-card.picked.p2 .map-card-badge { color: var(--p2); }
+.map-card.picked.p3 .map-card-badge { color: var(--p3); }
 .map-card.decider .map-card-badge { color: var(--decider-color); }
 
 /* ── CHAMPION GRID ───────────────────────────────────────────────────────────── */
@@ -529,6 +592,7 @@ button.bo3-badge:hover {
 
 .log-p1      { color: var(--p1); font-weight: 700; }
 .log-p2      { color: var(--p2); font-weight: 700; }
+.log-p3      { color: var(--p3); font-weight: 700; }
 .log-decider { color: var(--decider-color); font-weight: 700; }
 
 /* ── RESULT SECTION ───────────────────────────────────────────────────────────── */
@@ -900,6 +964,13 @@ td.maps-cell { font-size: 0.82rem; color: var(--text-dim); }
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+/* Share link buttons container */
+#share-btns {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
 }
 
 /* Share link button — eye-catching */
