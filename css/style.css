@@ -590,7 +590,80 @@ button.bo3-badge:hover {
   gap: 2.5rem;
 }
 
+/* Desktop: standings + chart side by side; mobile: stacked (chart between standings & history) */
+.top-row {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.standings-section {
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+.chart-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.chart-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+#wins-chart { display: block; flex-shrink: 0; }
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+  .top-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .chart-section {
+    width: 100%;
+  }
+  .chart-body {
+    justify-content: center;
+  }
+}
+
 .standings-section h2,
+.chart-section h2,
 .history-section h2 {
   font-family: 'Orbitron', monospace;
   font-size: 0.82rem;
@@ -646,6 +719,11 @@ td.rank {
 }
 
 td.pname { font-weight: 700; font-size: 1.05rem; }
+
+.trophy        { display: inline-block; font-size: 0.95em; line-height: 1; }
+.trophy-gold   { filter: sepia(1) saturate(5) brightness(1.1); }
+.trophy-silver { filter: grayscale(1) brightness(1.7) contrast(0.85); }
+.trophy-bronze { filter: none; }
 
 .win  { color: var(--win-color); }
 .loss { color: var(--loss-color); }

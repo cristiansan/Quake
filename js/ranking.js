@@ -21,26 +21,125 @@
            d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  // ── PIE CHART ─────────────────────────────────────────────────────────────────
+  var CHART_COLORS = ['#ff6a00','#00cfff','#ffd700','#33bb66','#b06aff','#ff3366','#1abc9c','#e67e22'];
+
+  function renderPieChart(standings) {
+    var canvas  = document.getElementById('wins-chart');
+    var legend  = document.getElementById('chart-legend');
+    var section = document.querySelector('.chart-section');
+    if (!canvas || !legend || !section) return;
+
+    var totalWins = standings.reduce(function (s, p) { return s + p.wins; }, 0);
+    if (!totalWins) { section.style.display = 'none'; return; }
+
+    section.style.display = '';
+
+    var dpr  = window.devicePixelRatio || 1;
+    var SIZE = 200;
+    canvas.style.width  = SIZE + 'px';
+    canvas.style.height = SIZE + 'px';
+    canvas.width  = SIZE * dpr;
+    canvas.height = SIZE * dpr;
+
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, SIZE, SIZE);
+
+    var cx = SIZE / 2, cy = SIZE / 2;
+    var R  = SIZE * 0.44;
+    var ri = R * 0.54;
+    var GAP = standings.length > 1 ? 0.03 : 0;
+
+    // First pass: draw slices + collect label positions
+    var labelData = [];
+    var angle = -Math.PI / 2;
+    standings.forEach(function (p, i) {
+      if (!p.wins) return;
+      var slice = (p.wins / totalWins) * (2 * Math.PI) - GAP;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, angle, angle + slice);
+      ctx.closePath();
+      ctx.fillStyle = CHART_COLORS[i % CHART_COLORS.length];
+      ctx.fill();
+      var mid = angle + slice / 2;
+      var lr  = (R + ri) / 2; // midpoint between outer and inner radius
+      labelData.push({ mid: mid, lr: lr, letter: p.name.charAt(0).toUpperCase() });
+      angle += slice + GAP;
+    });
+
+    // Donut hole
+    ctx.beginPath();
+    ctx.arc(cx, cy, ri, 0, 2 * Math.PI);
+    ctx.fillStyle = '#141414';
+    ctx.fill();
+
+    // Center label
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 26px Orbitron, monospace';
+    ctx.fillText(totalWins, cx, cy - 8);
+    ctx.font = '10px Rajdhani, sans-serif';
+    ctx.fillStyle = '#888';
+    ctx.fillText('WINS', cx, cy + 13);
+
+    // Initial letters on each slice
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 14px Orbitron, monospace';
+    labelData.forEach(function (l) {
+      var lx = cx + Math.cos(l.mid) * l.lr;
+      var ly = cy + Math.sin(l.mid) * l.lr;
+      ctx.fillText(l.letter, lx, ly);
+    });
+
+    // Legend (color dot + name only) — color indices aligned with chart
+    var legendItems = [];
+    standings.forEach(function (p, i) {
+      if (!p.wins) return;
+      legendItems.push(
+        '<div class="legend-item">' +
+        '<span class="legend-dot" style="background:' + CHART_COLORS[i % CHART_COLORS.length] + '"></span>' +
+        '<span class="legend-name">' + p.name + '</span>' +
+        '</div>'
+      );
+    });
+    legend.innerHTML = legendItems.join('');
+  }
+
   // ── RENDER STANDINGS ─────────────────────────────────────────────────────────
+  var TROPHIES = [
+    '<span class="trophy trophy-gold">🏆</span>',
+    '<span class="trophy trophy-bronze">🏆</span>',
+    '<span class="trophy trophy-silver">🏆</span>'
+  ];
+
   function renderStandings(matches) {
     const standings = buildStandings(matches);
     const tbody     = document.getElementById('standings-body');
 
     if (!standings.length) {
       tbody.innerHTML = `<tr><td colspan="4" class="empty">${t('no_matches')}</td></tr>`;
+      renderPieChart([]);
       return;
     }
 
     tbody.innerHTML = standings.map((p, i) => {
-      const total = p.wins + p.losses;
-      const pct   = total > 0 ? Math.round(p.wins / total * 100) : 0;
+      const total   = p.wins + p.losses;
+      const pct     = total > 0 ? Math.round(p.wins / total * 100) : 0;
+      const trophy  = TROPHIES[i] ? TROPHIES[i] + ' ' : '';
       return `<tr>
         <td class="rank">${i + 1}</td>
-        <td class="pname">${p.name}</td>
+        <td class="pname">${trophy}${p.name}</td>
         <td class="wl"><span class="win">${p.wins}W</span> — <span class="loss">${p.losses}L</span></td>
         <td class="pct">${pct}%</td>
       </tr>`;
     }).join('');
+
+    renderPieChart(standings);
   }
 
   // ── RENDER HISTORY ────────────────────────────────────────────────────────────

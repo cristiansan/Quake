@@ -26,23 +26,35 @@
 
     <main class="ranking-main">
 
-      <!-- STANDINGS -->
-      <section class="standings-section">
-        <h2 data-i18n="standings">TABLA DE POSICIONES</h2>
-        <table class="standings-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th data-i18n="player_col">JUGADOR</th>
-              <th>W — L</th>
-              <th>WIN%</th>
-            </tr>
-          </thead>
-          <tbody id="standings-body">
-            <tr><td colspan="4" class="empty" data-i18n="loading">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </section>
+      <!-- STANDINGS + CHART (side by side on desktop, stacked on mobile) -->
+      <div class="top-row">
+
+        <section class="standings-section">
+          <h2 data-i18n="standings">TABLA DE POSICIONES</h2>
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th data-i18n="player_col">JUGADOR</th>
+                <th>W — L</th>
+                <th>WIN%</th>
+              </tr>
+            </thead>
+            <tbody id="standings-body">
+              <tr><td colspan="4" class="empty" data-i18n="loading">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="chart-section" style="display:none">
+          <h2>VICTORIAS</h2>
+          <div class="chart-body">
+            <canvas id="wins-chart"></canvas>
+            <div id="chart-legend" class="chart-legend"></div>
+          </div>
+        </section>
+
+      </div>
 
       <!-- MATCH HISTORY -->
       <section class="history-section">

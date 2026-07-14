@@ -1,7 +1,14 @@
 (function () {
-  const VERSION = 'v1.0';
+  const VERSION = 'v1.1';
 
   const CHANGELOG = [
+    {
+      version: 'v1.1',
+      changes: [
+        'Ranking: gráfico de torta (donut) con victorias por jugador, al costado de la tabla en desktop y entre tabla e historial en mobile',
+        'Ranking: trofeos 🏆 dorado, plateado y naranja para el top 3 en la tabla de posiciones',
+      ],
+    },
     {
       version: 'v1.0',
       changes: [
